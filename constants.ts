@@ -55,6 +55,61 @@ export const DYNAMICS_365_ROI_DATA = {
   revenue: { value: 150, label: "ERP Integration", subtext: "Dynamics 365 Verified" }
 };
 
+export const INTEGRATIONS_STATUS = [
+  {
+    id: 'd365',
+    name: 'Dynamics 365',
+    status: 'Healthy',
+    lastSync: '2m ago',
+    latencyMs: 118,
+    errorRate: 0.2,
+    sla: '99.95%',
+    recentEvents: [
+      { event: 'Workforce payload refresh', status: 'Success', time: '06:12 AM' },
+      { event: 'ERP ledger delta', status: 'Success', time: '05:58 AM' }
+    ]
+  },
+  {
+    id: 'hubspot',
+    name: 'HubSpot',
+    status: 'Degraded',
+    lastSync: '12m ago',
+    latencyMs: 340,
+    errorRate: 2.1,
+    sla: '99.80%',
+    recentEvents: [
+      { event: 'Campaign attribution sync', status: 'Delayed', time: '05:49 AM' },
+      { event: 'Contact delta feed', status: 'Success', time: '05:31 AM' }
+    ]
+  },
+  {
+    id: 'payroll',
+    name: 'Payroll',
+    status: 'Healthy',
+    lastSync: '5m ago',
+    latencyMs: 205,
+    errorRate: 0.4,
+    sla: '99.90%',
+    recentEvents: [
+      { event: 'Timesheet export', status: 'Success', time: '06:05 AM' },
+      { event: 'Overtime exception check', status: 'Success', time: '05:40 AM' }
+    ]
+  },
+  {
+    id: 'pos',
+    name: 'POS',
+    status: 'Investigating',
+    lastSync: '18m ago',
+    latencyMs: 512,
+    errorRate: 4.6,
+    sla: '99.50%',
+    recentEvents: [
+      { event: 'Ticket latency spike', status: 'Investigating', time: '05:44 AM' },
+      { event: 'Store batch ingest', status: 'Success', time: '05:10 AM' }
+    ]
+  }
+];
+
 export const EMPLOYEES: Employee[] = [
   { id: '1', name: 'John Smith', role: 'Security Ops Lead', department: 'Front End', status: 'Active', performance: 4.8, email: 'john.smith@optischedule.com', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
   { id: '2', name: 'Maria Chen', role: 'Protocol Manager', department: 'Grocery', status: 'Active', performance: 4.6, email: 'maria.chen@optischedule.com', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },

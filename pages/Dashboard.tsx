@@ -3,7 +3,7 @@ import Header from '../components/Header';
 import StatCard from '../components/StatCard';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { CheckCircle2, Clock, ShieldAlert, ShieldCheck, Scale, TrendingUp, Zap, Database, Activity, Terminal, Server, Globe, Lock, RefreshCw, AlertTriangle, Loader2 } from 'lucide-react';
-import { DATE_STRING, FISCAL_METRICS, APP_VERSION, DYNAMICS_365_ROI_DATA } from '../constants';
+import { DATE_STRING, FISCAL_METRICS, APP_VERSION, DYNAMICS_365_ROI_DATA, INTEGRATIONS_STATUS, BRAND_NAME } from '../constants';
 
 const data = [
   { time: '8 AM', value: 40 },
@@ -279,6 +279,47 @@ const Dashboard: React.FC = () => {
                  </button>
               </div>
            </div>
+        </div>
+
+        <div className="bg-slate-900 rounded-2xl shadow-xl border border-slate-800 p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <ShieldCheck className="w-4 h-4 text-blue-500" />
+            <h3 className="text-xs font-black text-white uppercase tracking-[0.2em]">Integrations Health</h3>
+          </div>
+          <div className="space-y-3">
+            {INTEGRATIONS_STATUS.map((integration) => {
+              const statusStyles = {
+                Healthy: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+                Degraded: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+                Investigating: 'bg-red-500/15 text-red-400 border-red-500/30'
+              }[integration.status] || 'bg-slate-500/15 text-slate-300 border-slate-500/30';
+
+              return (
+                <div
+                  key={integration.id}
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <p className="text-xs font-black text-white uppercase tracking-widest">{integration.name}</p>
+                      <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Last sync {integration.lastSync}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                    <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full border ${statusStyles}`}>
+                      {integration.status}
+                    </span>
+                    <span className="text-[10px] text-slate-300 font-mono">
+                      {integration.latencyMs}ms
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      SLA {integration.sla}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
