@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
-import { HEATMAP_DATA } from '../constants';
+import { HEATMAP_DATA, INTEGRATIONS_STATUS } from '../constants';
 import { Calendar, Download, Printer, Filter, RefreshCw, Link as LinkIcon, Check, X, ShieldCheck, Settings, Database, Users as UsersIcon, List, ArrowLeftRight, Activity, Globe, Loader2 } from 'lucide-react';
 import { View } from '../types';
 
@@ -326,6 +326,59 @@ const Scheduling: React.FC<SchedulingProps> = ({ setCurrentView, onFinalize }) =
                  </div>
               </div>
            )}
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+            <div>
+              <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest">Integrations Drill-In</h3>
+              <p className="text-[11px] text-gray-500 font-medium">Recent sync events across core services.</p>
+            </div>
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Last 30 minutes</span>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {INTEGRATIONS_STATUS.map((integration) => (
+              <div key={integration.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50/60">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="text-xs font-black text-gray-900 uppercase tracking-widest">{integration.name}</p>
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Last sync {integration.lastSync}</p>
+                  </div>
+                  <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full ${
+                    integration.status === 'Healthy' ? 'bg-emerald-100 text-emerald-700' :
+                    integration.status === 'Degraded' ? 'bg-amber-100 text-amber-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {integration.status}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {integration.recentEvents.map((event, index) => (
+                    <div key={`${integration.id}-${index}`} className="flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <ArrowLeftRight className="w-4 h-4 text-blue-600" />
+                        <span className="font-semibold">{event.event}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
+                          event.status === 'Success' ? 'bg-blue-100 text-blue-700' :
+                          event.status === 'Delayed' ? 'bg-amber-100 text-amber-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {event.status}
+                        </span>
+                        <p className="text-[10px] text-gray-400 font-bold mt-1">{event.time}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 pt-3 border-t border-gray-200 flex items-center justify-between text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                  <span>Latency {integration.latencyMs}ms</span>
+                  <span>SLA {integration.sla}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Weekly Schedule Section */}

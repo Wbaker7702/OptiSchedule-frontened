@@ -1,4 +1,4 @@
-import { Employee, Product, HeatmapDataPoint, DepartmentMetric } from './types';
+import { Employee, Product, HeatmapDataPoint, DepartmentMetric, KpiMetric } from './types';
 
 export const CURRENT_USER = "Wesley Baker";
 export const STORE_NUMBER = "5065";
@@ -22,6 +22,37 @@ export const Q4_METRICS = {
   topPerformingStore: "5065",
   complianceScore: 98.5
 };
+
+export const KPI_METRICS: KpiMetric[] = [
+  {
+    name: 'Schedule Accuracy',
+    currentValue: '96.4%',
+    targetValue: '97%',
+    trend: 'up',
+    status: 'on_track'
+  },
+  {
+    name: 'Labor Forecast Variance',
+    currentValue: '2.8%',
+    targetValue: '2.5%',
+    trend: 'down',
+    status: 'watch'
+  },
+  {
+    name: 'Integration SLA',
+    currentValue: '99.92%',
+    targetValue: '99.9%',
+    trend: 'steady',
+    status: 'on_track'
+  },
+  {
+    name: 'Audit Readiness',
+    currentValue: '93%',
+    targetValue: '95%',
+    trend: 'up',
+    status: 'critical'
+  }
+];
 
 export const FISCAL_METRICS = {
   avgPayRate: 14.00,
@@ -67,6 +98,60 @@ export const ENTERPRISE_COMPLIANCE = {
   lastAuditDate: "2025-11-18",
   nextReviewDate: "2026-05-15"
 };
+export const INTEGRATIONS_STATUS = [
+  {
+    id: 'd365',
+    name: 'Dynamics 365',
+    status: 'Healthy',
+    lastSync: '2m ago',
+    latencyMs: 118,
+    errorRate: 0.2,
+    sla: '99.95%',
+    recentEvents: [
+      { event: 'Workforce payload refresh', status: 'Success', time: '06:12 AM' },
+      { event: 'ERP ledger delta', status: 'Success', time: '05:58 AM' }
+    ]
+  },
+  {
+    id: 'hubspot',
+    name: 'HubSpot',
+    status: 'Degraded',
+    lastSync: '12m ago',
+    latencyMs: 340,
+    errorRate: 2.1,
+    sla: '99.80%',
+    recentEvents: [
+      { event: 'Campaign attribution sync', status: 'Delayed', time: '05:49 AM' },
+      { event: 'Contact delta feed', status: 'Success', time: '05:31 AM' }
+    ]
+  },
+  {
+    id: 'payroll',
+    name: 'Payroll',
+    status: 'Healthy',
+    lastSync: '5m ago',
+    latencyMs: 205,
+    errorRate: 0.4,
+    sla: '99.90%',
+    recentEvents: [
+      { event: 'Timesheet export', status: 'Success', time: '06:05 AM' },
+      { event: 'Overtime exception check', status: 'Success', time: '05:40 AM' }
+    ]
+  },
+  {
+    id: 'pos',
+    name: 'POS',
+    status: 'Investigating',
+    lastSync: '18m ago',
+    latencyMs: 512,
+    errorRate: 4.6,
+    sla: '99.50%',
+    recentEvents: [
+      { event: 'Ticket latency spike', status: 'Investigating', time: '05:44 AM' },
+      { event: 'Store batch ingest', status: 'Success', time: '05:10 AM' }
+    ]
+  }
+];
 
 export const EMPLOYEES: Employee[] = [
   { id: '1', name: 'John Smith', role: 'Security Ops Lead', department: 'Front End', status: 'Active', performance: 4.8, email: 'john.smith@optischedule.com', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
