@@ -86,6 +86,18 @@ export const DYNAMICS_365_ROI_DATA = {
   revenue: { value: 150, label: "ERP Integration", subtext: "Dynamics 365 Verified" }
 };
 
+export const ENTERPRISE_COMPLIANCE = {
+  certifications: [
+    { name: "SOC 2 Type II", status: "Certified" },
+    { name: "ISO 27001", status: "Certified" },
+    { name: "GDPR", status: "Ready" }
+  ],
+  auditReadiness: "Always-on controls mapped to SOC, ISO, and GDPR.",
+  dataResidency: "US, EU, UK data residency with region-locked backups.",
+  encryptionStandards: ["AES-256 at rest", "TLS 1.3 in transit", "KMS-managed keys"],
+  lastAuditDate: "2025-11-18",
+  nextReviewDate: "2026-05-15"
+};
 export const INTEGRATIONS_STATUS = [
   {
     id: 'd365',
