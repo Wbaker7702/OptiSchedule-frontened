@@ -64,8 +64,8 @@ export const ENTERPRISE_COMPLIANCE = {
   auditReadiness: "Always-on controls mapped to SOC, ISO, and GDPR.",
   dataResidency: "US, EU, UK data residency with region-locked backups.",
   encryptionStandards: ["AES-256 at rest", "TLS 1.3 in transit", "KMS-managed keys"],
-  lastAuditDate: "Nov 18, 2025",
-  nextReviewDate: "May 15, 2026"
+  lastAuditDate: "2025-11-18",
+  nextReviewDate: "2026-05-15"
 };
 
 export const EMPLOYEES: Employee[] = [
