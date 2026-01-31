@@ -39,6 +39,7 @@ export const OPERATIONAL_AUDITS: AuditLog[] = [
   { id: 'aud-103', severity: 'info', code: 'OPT_09', message: 'Optimal staffing achieved for peak hour', file: 'Schedule: Current_Cycle', file_path: 'Schedule: Current_Cycle', fix: 'No action' },
   { id: 'aud-104', severity: 'error', code: 'FIS-02', message: 'Asset Depletion Risk: Critical Inventory Gap', file: 'Dept: Grocery', file_path: 'Dept: Grocery', fix: 'Force Re-stocking' },
   { id: 'aud-105', severity: 'warning', code: 'LAB-02', message: 'Protocol Deviation: 12.5 surplus hrs unallocated', file: 'Dept: Apparel', file_path: 'Dept: Apparel', fix: 'Re-deploy Assets' },
+  { id: 'aud-106', severity: 'info', code: 'CRM-01', message: 'HubSpot Data Ingress: 1250 Loyalty Signups Synced', file: 'Node: HubSpot_CRM', file_path: 'Node: HubSpot_CRM', fix: 'No action' },
 ];
 
 export const VULNERABILITY_DATA: Vulnerability[] = [

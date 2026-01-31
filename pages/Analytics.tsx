@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, Cell } from 'recharts';
-import { Download, FileText, TrendingUp, DollarSign, Users, Scale, Target, ArrowUpRight, Loader2, Database, ShieldCheck, ArrowUp } from 'lucide-react';
-import { FISCAL_METRICS, ENTERPRISE_INGRESS_HISTORY } from '../constants';
+import { Download, FileText, TrendingUp, DollarSign, Users, Scale, Target, ArrowUpRight, Loader2, Database, ShieldCheck, ArrowUp, Megaphone, Heart, BarChart2, Layers } from 'lucide-react';
+import { FISCAL_METRICS, HUBSPOT_METRICS } from '../constants';
 
 const laborPivotData = [
   { week: 'W1', leakage: 186, recovered: 0 },
@@ -38,249 +38,193 @@ const Analytics: React.FC = () => {
   const handleDownloadReport = (report: typeof reports[0]) => {
     setDownloadingId(report.id);
     
-    // Simulate generation/fetch delay
     setTimeout(() => {
-      const content = `STRATEGIC REPORT: ${report.name}\nGenerated on: ${new Date().toLocaleString()}\nFile Size: ${report.size}\n\nKey Strategic Insights:\n- Current ROI Multiplier: ${FISCAL_METRICS.currentROI}x\n- Target EBITDA Protection: $${FISCAL_METRICS.vision2028}M\n- Status: VERIFIED AND APPROVED`;
-      
-      const blob = new Blob([content], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${report.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
       setDownloadingId(null);
     }, 1500);
   };
 
   return (
-    <div className="flex-1 bg-gray-50 overflow-auto text-slate-900">
-      <Header title="Analytics & Reports" subtitle="The Fiscal Foundation: Efficiency vs. Leakage" />
+    <div className="flex-1 bg-gray-50 overflow-auto">
+      <Header title="Fiscal Oversight" subtitle="ROI Analysis & Labor Recapture Analytics" />
 
       <div className="p-8 max-w-7xl mx-auto space-y-8">
         
-        {/* The Scaling Formula Header */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-xl shadow-lg text-white relative overflow-hidden">
-             <div className="relative z-10">
-               <p className="text-blue-200 font-medium text-sm uppercase tracking-wider mb-1">Business Logic</p>
-               <h3 className="text-2xl font-bold text-white">The ROI Formula</h3>
-               <div className="mt-4 flex items-baseline gap-2">
-                 <span className="text-4xl font-bold">{FISCAL_METRICS.currentROI}x</span>
-                 <span className="text-blue-200 text-sm">Return</span>
-               </div>
-               <p className="mt-2 text-sm text-blue-100 opacity-90">"For every $1 invested, we protect ${FISCAL_METRICS.currentROI}."</p>
-             </div>
-             <div className="absolute right-0 bottom-0 opacity-10 transform translate-x-4 translate-y-4">
-               <Scale className="w-32 h-32" />
-             </div>
-          </div>
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex justify-between items-start mb-2">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Execution Leakage</p>
+                    <div className="p-1.5 bg-red-50 text-red-600 rounded-lg"><ArrowUp className="w-3 h-3" /></div>
+                </div>
+                <h3 className="text-2xl font-black text-gray-900">${FISCAL_METRICS.executionLeakage.toLocaleString()}</h3>
+                <p className="text-xs text-red-500 font-bold mt-1">Weekly Exposure</p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex justify-between items-start mb-2">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">ROI Multiplier</p>
+                    <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg"><TrendingUp className="w-3 h-3" /></div>
+                </div>
+                <h3 className="text-2xl font-black text-gray-900">{FISCAL_METRICS.currentROI}x</h3>
+                <p className="text-xs text-emerald-500 font-bold mt-1">Sentinel Efficiency</p>
+            </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-             <div className="flex justify-between items-start">
-               <div>
-                 <p className="text-sm font-medium text-gray-500">Annual Recovery Target</p>
-                 <h3 className="text-3xl font-bold text-gray-900 mt-2">${FISCAL_METRICS.annualRecoveryTarget}M</h3>
-               </div>
-               <div className="p-2 bg-green-50 rounded-lg">
-                 <Target className="w-6 h-6 text-green-600" />
-               </div>
-             </div>
-             <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
-               <span className="font-semibold text-gray-900">Goal:</span> "Leakage" Stopped across 12-store market.
-             </div>
-          </div>
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex justify-between items-start mb-2">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Annual Recovery</p>
+                    <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><Target className="w-3 h-3" /></div>
+                </div>
+                <h3 className="text-2xl font-black text-gray-900">${FISCAL_METRICS.annualRecoveryTarget}M</h3>
+                <p className="text-xs text-blue-500 font-bold mt-1">Target</p>
+            </div>
 
-           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-             <div className="flex justify-between items-start">
-               <div>
-                 <p className="text-sm font-medium text-gray-500">2028 Vision</p>
-                 <h3 className="text-3xl font-bold text-gray-900 mt-2">${FISCAL_METRICS.vision2028}M</h3>
-               </div>
-               <div className="p-2 bg-purple-50 rounded-lg">
-                 <TrendingUp className="w-6 h-6 text-purple-600" />
-               </div>
-             </div>
-             <div className="mt-4 flex items-center text-sm text-purple-600 font-medium">
-               <ArrowUpRight className="w-4 h-4 mr-1" />
-               Cumulative ROI through Scale
-             </div>
-          </div>
+             <div className="bg-slate-900 p-6 rounded-xl shadow-lg border border-slate-800">
+                <div className="flex justify-between items-start mb-2">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">2028 Vision</p>
+                    <div className="p-1.5 bg-slate-800 text-white rounded-lg"><ShieldCheck className="w-3 h-3" /></div>
+                </div>
+                <h3 className="text-2xl font-black text-white">${FISCAL_METRICS.vision2028}M</h3>
+                <p className="text-xs text-slate-400 font-bold mt-1">Enterprise Value</p>
+            </div>
         </div>
 
-        {/* Enterprise Ingress History Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-           <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-slate-50">
-              <div className="flex items-center gap-3">
-                 <div className="p-2 bg-blue-100 rounded-lg">
-                    <Database className="w-5 h-5 text-blue-600" />
+        {/* HubSpot Integration Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-orange-100 overflow-hidden">
+             <div className="p-6 border-b border-orange-100 bg-orange-50/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                 <div className="flex items-center gap-4">
+                     <div className="p-3 bg-[#ff7a59] rounded-xl shadow-lg shadow-orange-500/20">
+                         <Layers className="w-6 h-6 text-white" />
+                     </div>
+                     <div>
+                         <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">HubSpot Marketing Velocity</h3>
+                         <p className="text-xs text-gray-500 font-medium">CRM Ingress Node • Validating Campaign ROI against Staffing Deployment</p>
+                     </div>
                  </div>
-                 <div>
-                    <h3 className="font-bold text-gray-900">Enterprise Ingress History</h3>
-                    <p className="text-xs text-gray-500 uppercase tracking-widest font-black">Sentinel Data Flow Analytics</p>
+                 <div className="flex items-center gap-3">
+                     <div className="px-3 py-1 bg-white border border-orange-200 rounded-lg flex items-center gap-2">
+                         <div className={`w-2 h-2 rounded-full ${HUBSPOT_METRICS.syncStatus === 'Disconnected' ? 'bg-slate-300' : 'bg-emerald-500 animate-pulse'}`} />
+                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">{HUBSPOT_METRICS.syncStatus === 'Disconnected' ? 'Connect D365 First' : 'Live Sync Active'}</span>
+                     </div>
                  </div>
-              </div>
-              <div className="flex items-center gap-2 text-emerald-600 text-xs font-black uppercase tracking-widest">
-                 <TrendingUp className="w-4 h-4" />
-                 Total Surge: +46% (5 Day Window)
-              </div>
-           </div>
-           <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                 <thead className="bg-gray-50 text-gray-500 font-black uppercase tracking-widest text-[10px] border-b border-gray-200">
-                    <tr>
-                       <th className="px-6 py-4">Verification Date</th>
-                       <th className="px-6 py-4">Ingress Volume</th>
-                       <th className="px-6 py-4">Data Source Node</th>
-                       <th className="px-6 py-4">Day/Day Growth</th>
-                       <th className="px-6 py-4">Integrity Status</th>
-                    </tr>
-                 </thead>
-                 <tbody className="divide-y divide-gray-100 font-medium">
-                    {ENTERPRISE_INGRESS_HISTORY.map((point, idx) => (
-                       <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                          <td className="px-6 py-4 font-mono text-xs">{point.date}</td>
-                          <td className="px-6 py-4 font-black">{point.volume.toLocaleString()} <span className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Leads</span></td>
-                          <td className="px-6 py-4">
-                             <span className="px-2 py-1 bg-slate-100 border border-slate-200 rounded text-[10px] uppercase tracking-widest font-black text-slate-600">
-                                {point.source}
-                             </span>
-                          </td>
-                          <td className="px-6 py-4">
-                             <div className="flex items-center gap-1.5 text-emerald-600">
-                                <ArrowUp className="w-3.5 h-3.5" />
-                                <span className="font-black">+{point.growth}%</span>
-                             </div>
-                          </td>
-                          <td className="px-6 py-4">
-                             <div className="flex items-center gap-2">
-                                <ShieldCheck className={`w-4 h-4 ${point.status === 'Verified' ? 'text-blue-500' : 'text-emerald-500'}`} />
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${point.status === 'Verified' ? 'text-blue-600' : 'text-emerald-600'}`}>
-                                   {point.status}
-                                </span>
-                             </div>
-                          </td>
-                       </tr>
-                    ))}
-                 </tbody>
-              </table>
-           </div>
+             </div>
+             
+             <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                 <div className="flex items-center gap-4">
+                     <div className="p-3 bg-orange-100 rounded-lg text-[#ff7a59]">
+                         <Megaphone className="w-5 h-5" />
+                     </div>
+                     <div>
+                         <p className="text-2xl font-black text-gray-900">{HUBSPOT_METRICS.activeCampaigns}</p>
+                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Campaigns</p>
+                     </div>
+                 </div>
+
+                 <div className="flex items-center gap-4 border-l border-orange-100 pl-8">
+                     <div className="p-3 bg-orange-100 rounded-lg text-[#ff7a59]">
+                         <Heart className="w-5 h-5" />
+                     </div>
+                     <div>
+                         <p className="text-2xl font-black text-gray-900">{HUBSPOT_METRICS.loyaltySignups.toLocaleString()}</p>
+                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Loyalty Signups</p>
+                     </div>
+                 </div>
+
+                 <div className="flex items-center gap-4 border-l border-orange-100 pl-8">
+                     <div className="p-3 bg-orange-100 rounded-lg text-[#ff7a59]">
+                         <BarChart2 className="w-5 h-5" />
+                     </div>
+                     <div>
+                         <p className="text-2xl font-black text-gray-900">${(HUBSPOT_METRICS.attributedRevenue / 1000).toFixed(1)}k</p>
+                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Attributed Rev</p>
+                     </div>
+                 </div>
+             </div>
         </div>
 
         {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
-          {/* Main Chart: The Pivot */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div className="mb-6">
-                <h3 className="font-semibold text-gray-900">Labor Hour Recapture</h3>
-                <p className="text-xs text-gray-500">Pivoting {FISCAL_METRICS.targetWeeklyHoursRecapture} hours from "Leakage" to "Revenue"</p>
-            </div>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={laborPivotData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
-                  <Tooltip 
-                    contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
-                  />
-                  <Legend />
-                  <Area type="monotone" dataKey="leakage" name="Unaccounted (Leakage)" stackId="1" stroke="#ef4444" fill="#fca5a5" />
-                  <Area type="monotone" dataKey="recovered" name="Recaptured (Revenue)" stackId="1" stroke="#22c55e" fill="#86efac" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Secondary Chart: The Vision */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div className="mb-6">
-                <h3 className="font-semibold text-gray-900">Projected Cumulative Impact (2025-2028)</h3>
-                <p className="text-xs text-gray-500">Standardized scale across the market</p>
-            </div>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={scalingData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b'}} tickFormatter={(value) => `$${value}M`} />
-                  <Tooltip 
-                     cursor={{fill: '#f8fafc'}}
-                     contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
-                     formatter={(value) => [`$${value} Million`, 'Cumulative ROI']}
-                  />
-                  <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={50}>
-                     {scalingData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={index === 3 ? '#1e40af' : '#3b82f6'} />
-                     ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-
-        {/* Unified Takeaway Section */}
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-6">
-            <h3 className="text-lg font-bold text-slate-800 mb-4">Unified Takeaway</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="flex gap-4">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                        <DollarSign className="w-6 h-6 text-blue-600" />
-                    </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div className="flex justify-between items-center mb-6">
                     <div>
-                        <h4 className="font-bold text-slate-900">For the CEO / CFO</h4>
-                        <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-                            "This is a variance reduction strategy that protects the P&L and boosts EBITDA."
-                        </p>
+                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Labor Pivot Analysis</h3>
+                        <p className="text-xs text-gray-500 mt-1">Leakage vs. Recapture (Weekly)</p>
                     </div>
+                    <Scale className="w-5 h-5 text-gray-300" />
                 </div>
-                <div className="flex gap-4">
-                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                        <Users className="w-6 h-6 text-green-600" />
-                    </div>
+                <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={laborPivotData}>
+                            <defs>
+                                <linearGradient id="colorLeakage" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1}/>
+                                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                                </linearGradient>
+                                <linearGradient id="colorRecovered" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
+                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 'bold'}} />
+                            <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 'bold'}} />
+                            <Tooltip contentStyle={{backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0'}} />
+                            <Area type="monotone" dataKey="leakage" stroke="#ef4444" strokeWidth={2} fillOpacity={1} fill="url(#colorLeakage)" />
+                            <Area type="monotone" dataKey="recovered" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorRecovered)" />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div className="flex justify-between items-center mb-6">
                     <div>
-                        <h4 className="font-bold text-slate-900">For the Store Manager</h4>
-                        <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-                            "This is a resource reallocation strategy. It gives you back the hours you need to keep your store 'Grand Opening Ready' <span className="font-semibold text-slate-800">without asking for more budget.</span>"
-                        </p>
+                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Fiscal Scaling Model</h3>
+                        <p className="text-xs text-gray-500 mt-1">Projected EBITDA Recovery (Millions)</p>
                     </div>
+                    <TrendingUp className="w-5 h-5 text-gray-300" />
+                </div>
+                <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={scalingData}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 'bold'}} />
+                            <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 'bold'}} />
+                            <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0'}} />
+                            <Bar dataKey="value" fill="#002050" radius={[4, 4, 0, 0]} barSize={40} />
+                        </BarChart>
+                    </ResponsiveContainer>
                 </div>
             </div>
         </div>
 
-        {/* Downloadable Reports */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-           <div className="p-6 border-b border-gray-100">
-              <h3 className="font-semibold text-gray-900">Strategic Documentation</h3>
-           </div>
-           <div className="divide-y divide-gray-100">
-              {reports.map((report) => (
-                <div key={report.id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                   <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
-                        <FileText className="w-5 h-5 text-indigo-500" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{report.name}</p>
-                        <p className="text-xs text-gray-500">{report.date} • {report.size}</p>
-                      </div>
-                   </div>
-                   <button 
-                     onClick={() => handleDownloadReport(report)}
-                     disabled={downloadingId === report.id}
-                     className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-wait"
-                   >
-                     {downloadingId === report.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                     Download
-                   </button>
-                </div>
-              ))}
-           </div>
+        {/* Reports Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+             <div className="p-6 border-b border-gray-100 flex items-center gap-3">
+                 <FileText className="w-5 h-5 text-blue-600" />
+                 <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Strategic Reporting Archive</h3>
+             </div>
+             <div className="divide-y divide-gray-100">
+                 {reports.map(report => (
+                     <div key={report.id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                         <div className="flex items-center gap-4">
+                             <div className="p-2 bg-gray-100 rounded text-gray-500">
+                                 <FileText className="w-4 h-4" />
+                             </div>
+                             <div>
+                                 <p className="text-sm font-bold text-gray-900">{report.name}</p>
+                                 <p className="text-xs text-gray-500">{report.date} • {report.size}</p>
+                             </div>
+                         </div>
+                         <button 
+                            onClick={() => handleDownloadReport(report)}
+                            className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                         >
+                            {downloadingId === report.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                            Download
+                         </button>
+                     </div>
+                 ))}
+             </div>
         </div>
 
       </div>

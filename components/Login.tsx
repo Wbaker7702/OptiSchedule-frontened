@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { ShieldCheck, Lock, Mail, ArrowRight, Activity, Database, ShieldAlert } from 'lucide-react';
 import { BRAND_NAME, APP_VERSION } from '../constants';
 
@@ -10,41 +10,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage('');
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail.endsWith('@optischedule.com')) {
-      setErrorMessage('Please use your OptiSchedule corporate email.');
-      return;
-    }
-
-    if (password.trim().length < 8) {
-      setErrorMessage('Policy clearance token must be at least 8 characters.');
-      return;
-    }
-
     setIsLoading(true);
     
     // Simulate API authentication delay
-    timeoutRef.current = setTimeout(() => {
+    setTimeout(() => {
       setIsLoading(false);
-      setPassword('');
       onLogin();
     }, 1200);
   };
@@ -68,7 +41,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <div className="inline-flex items-center justify-center p-4 bg-slate-800 rounded-2xl mb-6 shadow-xl border border-slate-700">
             <Activity className="w-10 h-10 text-blue-500" />
           </div>
-          <h1 className="text-xl font-black text-white mb-2 tracking-[0.1em] uppercase">{BRAND_NAME}</h1>
+          <h1 className="text-xl font-black text-white mb-2 tracking-[0.1em] uppercase">OptiSchedule Pro</h1>
           <p className="text-slate-400 text-xs font-mono uppercase tracking-widest">Workforce Management v3.1</p>
         </div>
 
@@ -80,11 +53,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {errorMessage && (
-              <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-[11px] text-red-300 font-mono">
-                {errorMessage}
-              </div>
-            )}
             <div>
               <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Corporate ID</label>
               <div className="relative">
@@ -97,7 +65,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-300 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all font-mono"
                   placeholder="ID@optischedule.com"
-                  autoComplete="username"
                   required
                 />
               </div>
@@ -115,7 +82,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-300 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all font-mono"
                   placeholder="••••••••"
-                  autoComplete="current-password"
                   required
                 />
               </div>
@@ -145,12 +111,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </form>
 
           <div className="mt-8 pt-6 border-t border-slate-800">
-            <div className="flex flex-col items-center justify-center gap-2 text-[10px] text-slate-600 font-mono font-bold uppercase tracking-widest">
-              <div className="flex items-center gap-2">
-                <ShieldAlert className="w-3 h-3" />
-                <span>Sentinel Security Standard • {APP_VERSION}</span>
-              </div>
-              <span className="text-[8px] text-slate-700 mt-1">© 2026 {BRAND_NAME} All Rights Reserved</span>
+            <div className="flex items-center justify-center gap-2 text-[10px] text-slate-600 font-mono font-bold uppercase tracking-widest">
+              <ShieldAlert className="w-3 h-3" />
+              <span>Sentinel Security Standard • {APP_VERSION}</span>
             </div>
           </div>
         </div>
