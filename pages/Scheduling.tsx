@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import Header from '../components/Header';
 import { HEATMAP_DATA } from '../constants';
-import { Calendar, RefreshCw, Link as LinkIcon, Check, X, ShieldCheck, Settings, Database, Users as UsersIcon, List, ArrowLeftRight, Activity, Globe, Server, Layers, Hexagon, AlertTriangle, ArrowRight, Share2, Loader2, FileText } from 'lucide-react';
+import { Calendar, RefreshCw, Link as LinkIcon, Check, X, ShieldCheck, Settings, Database, Users as UsersIcon, List, ArrowLeftRight, Activity, Globe, Server, Layers, Hexagon, AlertTriangle, ArrowRight, Share2, Loader2, FileText, Terminal } from 'lucide-react';
 import { View, ERPProvider, IntegrationStatus } from '../types';
 
 interface SchedulingProps {
@@ -16,6 +17,15 @@ interface SchedulingProps {
 
 type SyncStatus = 'SYNCED' | 'SYNCING' | 'CONFLICT' | 'OFFLINE';
 
+// Mock sync logs for the transaction log view
+const syncLogs = [
+  { event: 'Personnel Registry Sync', target: 'Azure AD / Sentinel Node', status: 'Success', time: '09:42:11' },
+  { event: 'Fiscal Budget Ingress', target: 'SAP S/4HANA', status: 'Success', time: '09:40:05' },
+  { event: 'Marketing Attribution Load', target: 'HubSpot CRM', status: 'Success', time: '09:38:50' },
+  { event: 'Inventory Level Verification', target: 'Dynamics 365 SCM', status: 'Success', time: '09:35:22' },
+  { event: 'Policy Linter Check', target: 'Local Node', status: 'Success', time: '09:30:00' },
+];
+
 const Scheduling: React.FC<SchedulingProps> = ({ 
   setCurrentView, 
   onFinalize,
@@ -29,7 +39,9 @@ const Scheduling: React.FC<SchedulingProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(!isConnected);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState(0);
+  const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'heatmap' | 'logs'>('heatmap');
+  const logEndRef = useRef<HTMLDivElement>(null);
   
   // Conflict State
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(isConnected ? 'SYNCED' : 'OFFLINE');
@@ -53,25 +65,43 @@ const Scheduling: React.FC<SchedulingProps> = ({
     performance: false
   });
 
-  // Dynamic logs based on active provider
-  const syncLogs = [
-    { event: 'Fetch Personnel Assets', target: activeProvider === 'SAP S/4HANA' ? 'SAP HCM' : activeProvider === 'HubSpot' ? 'Marketing Hub' : activeProvider === 'FDE' ? 'FDE Gateway' : 'Finance & Ops', status: 'Success', time: '06:00 AM' },
-    { event: 'Pipeline Sync', target: activeProvider === 'SAP S/4HANA' ? 'SAP Sales Cloud' : activeProvider === 'HubSpot' ? 'Sales Hub' : activeProvider === 'FDE' ? 'FDE Ledger' : 'Dynamics 365 Sales', status: 'Success', time: '06:05 AM' },
-    { event: 'HubSpot Marketing Data', target: 'CRM Ingress Node', status: 'Success', time: '06:08 AM' },
-    { event: 'ERP Resource Audit', target: 'Sentinel Node', status: 'Pending', time: 'Now' },
-    { event: 'Inventory Allocation', target: 'Supply Chain Hub', status: 'Failed', time: 'Yesterday' }
+  const hubspotLogPool = [
+    "GET /v3/objects/contacts/properties HTTP/1.1",
+    "AUTH_TOKEN: PAT-NA1-******* [VALID]",
+    "MAPPING: 'crm_deal_stage' -> 'staff_projection_weight'",
+    "FETCHING: Marketing Campaign Velocity...",
+    "HANDSHAKE: HubSpot Cloud Node -> Sentinel Hub",
+    "SYNCING: 4,502 Loyalty Records Processed",
+    "WEBHOOK_LISTEN: Started at https://node-5065.optischedule.io/crm/webhook",
+    "SUCCESS: Marketing attribution logic loaded.",
+    "WARN: 12 records with invalid emails skipped.",
+    "RE-INDEXING: Personnel Asset Registry..."
   ];
+
+  const erpLogPool = [
+    "POST /api/v1/auth/token [HANDSHAKE_OK]",
+    "GET /financial/ledger/v2/workforce_budget",
+    "VERIFYING: S/4HANA Schema integrity...",
+    "PULLING: Regional Resource Constraints",
+    "MAPPING: 'gl_code_8801' -> 'Labor_Allocation_FrontEnd'",
+    "ENFORCING: Sentinel Security Policy v3.1",
+    "ENCRYPTING: Data transit packets (AES-256)",
+    "SYNC_COMPLETE: Ledger entries synchronized."
+  ];
+
+  useEffect(() => {
+    if (logEndRef.current) {
+      logEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [terminalLogs]);
 
   const handleSync = () => {
     setIsSyncing(true);
     setSyncStatus('SYNCING');
     
-    // Simulate Sync Process & Conflict Detection
     setTimeout(() => {
         setIsSyncing(false);
-        // Randomly trigger conflict for demonstration
         const hasConflict = Math.random() > 0.4;
-        
         if (hasConflict) {
             setSyncStatus('CONFLICT');
             setShowConflictModal(true);
@@ -92,14 +122,19 @@ const Scheduling: React.FC<SchedulingProps> = ({
   const handleConnect = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSyncing(true);
+    setTerminalLogs([`INITIALIZING ${selectedProvider.toUpperCase()} NODE...`]);
     
-    // Start slow integration simulation
     let progress = 0;
     const interval = setInterval(() => {
-        progress += Math.floor(Math.random() * 8) + 2; // Increment by 2-10%
+        progress += Math.floor(Math.random() * 8) + 2;
         if (progress > 100) progress = 100;
         setSyncProgress(progress);
         
+        // Add log entry
+        const pool = selectedProvider === 'HubSpot' ? hubspotLogPool : erpLogPool;
+        const randomLog = pool[Math.floor(Math.random() * pool.length)];
+        setTerminalLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${randomLog}`].slice(-8));
+
         if (progress === 100) {
             clearInterval(interval);
             setTimeout(() => {
@@ -109,14 +144,11 @@ const Scheduling: React.FC<SchedulingProps> = ({
                 setIsSyncing(false);
                 setSyncStatus('SYNCED');
                 setSyncProgress(0);
-                
-                // Update global HubSpot status if applicable
-                if (selectedProvider === 'HubSpot') {
-                    setHubspotStatus('connected');
-                }
+                setTerminalLogs([]);
+                if (selectedProvider === 'HubSpot') setHubspotStatus('connected');
             }, 600);
         }
-    }, 200);
+    }, 250);
   };
 
   const toggleConfig = (key: keyof typeof syncConfig) => {
@@ -191,34 +223,16 @@ const Scheduling: React.FC<SchedulingProps> = ({
                      </div>
 
                      <div className="grid grid-cols-3 gap-4">
-                         <button 
-                             onClick={() => resolveConflict('ERP')}
-                             className="p-4 rounded-xl border-2 border-slate-100 hover:border-slate-800 hover:bg-slate-50 transition-all text-left group"
-                         >
+                         <button onClick={() => resolveConflict('ERP')} className="p-4 rounded-xl border-2 border-slate-100 hover:border-slate-800 hover:bg-slate-50 transition-all text-left group">
                              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-slate-600">Strategy A</span>
                              <p className="font-bold text-slate-800 mt-1">Force ERP Limit</p>
-                             <p className="text-[10px] text-gray-500 mt-2 leading-tight">Adhere to budget. Risk customer wait times.</p>
                          </button>
-
-                         <button 
-                             onClick={() => resolveConflict('CRM')}
-                             className="p-4 rounded-xl border-2 border-slate-100 hover:border-slate-800 hover:bg-slate-50 transition-all text-left group"
-                         >
+                         <button onClick={() => resolveConflict('CRM')} className="p-4 rounded-xl border-2 border-slate-100 hover:border-slate-800 hover:bg-slate-50 transition-all text-left group">
                              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-slate-600">Strategy B</span>
                              <p className="font-bold text-slate-800 mt-1">Force CRM Target</p>
-                             <p className="text-[10px] text-gray-500 mt-2 leading-tight">Maximize service. Accept budget variance.</p>
                          </button>
-
-                         <button 
-                             onClick={() => resolveConflict('HYBRID')}
-                             className="p-4 rounded-xl border-2 border-blue-100 bg-blue-50/50 hover:border-blue-500 hover:bg-blue-50 transition-all text-left group relative overflow-hidden"
-                         >
-                             <div className="absolute top-0 right-0 p-2 opacity-10">
-                                 <ShieldCheck className="w-12 h-12 text-blue-600" />
-                             </div>
-                             <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest group-hover:text-blue-600">Strategy C</span>
+                         <button onClick={() => resolveConflict('HYBRID')} className="p-4 rounded-xl border-2 border-blue-100 bg-blue-50/50 hover:border-blue-500 hover:bg-blue-50 transition-all text-left group relative overflow-hidden">
                              <p className="font-bold text-blue-900 mt-1">Sentinel Hybrid</p>
-                             <p className="text-[10px] text-blue-700/70 mt-2 leading-tight">AI-optimized balance based on ROI.</p>
                          </button>
                      </div>
                  </div>
@@ -252,269 +266,73 @@ const Scheduling: React.FC<SchedulingProps> = ({
                             {!isConnected && (
                                 <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
                                     {(['Dynamics 365', 'SAP S/4HANA', 'FDE', 'HubSpot'] as ERPProvider[]).map((p) => (
-                                        <button
-                                            key={p}
-                                            onClick={() => setSelectedProvider(p)}
-                                            className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
-                                                selectedProvider === p 
-                                                ? 'bg-white text-slate-900 shadow-sm' 
-                                                : 'text-gray-400 hover:text-gray-600'
-                                            }`}
-                                        >
+                                        <button key={p} onClick={() => setSelectedProvider(p)} className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${selectedProvider === p ? 'bg-white text-slate-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>
                                             {p === 'HubSpot' ? 'HubSpot' : p.replace('Dynamics ', 'D').replace('S/4HANA', 'HANA')}
                                         </button>
                                     ))}
                                 </div>
                             )}
 
-                            <p className="text-slate-700 text-sm mb-6 text-center leading-relaxed font-semibold">
-                                {isConnected 
-                                  ? `Modify your ${activeProvider} environment settings below. Changes are enforced via the Sentinel Protocol.`
-                                  : selectedProvider === 'HubSpot' 
-                                    ? 'Integrate Marketing & Sales Hubs to inform workforce scheduling with real-time deal flow and campaign velocity.'
-                                    : `Connect your ${selectedProvider} environment to synchronize enterprise resource planning and workforce deployment.`}
-                            </p>
-
                             <form onSubmit={handleConnect} className="space-y-5">
-                                {selectedProvider === 'Dynamics 365' && (
-                                    <>
-                                        <div>
-                                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Environment URL</label>
-                                            <div className="relative">
-                                                <input 
-                                                    type="text" 
-                                                    value={environmentUrl}
-                                                    onChange={(e) => setEnvironmentUrl(e.target.value)}
-                                                    placeholder="https://org.crm.dynamics.com"
-                                                    className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
-                                                    required={!isConnected}
-                                                />
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                                    <Globe className="w-4 h-4" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Tenant ID (Azure AD)</label>
-                                            <div className="relative">
-                                                <input 
-                                                    type="text" 
-                                                    value={tenantId}
-                                                    onChange={(e) => setTenantId(e.target.value)}
-                                                    placeholder="00000000-0000-0000-0000-000000000000"
-                                                    className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
-                                                    required={!isConnected}
-                                                />
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                                    <ShieldCheck className="w-4 h-4" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-
-                                {selectedProvider === 'HubSpot' && (
+                                {selectedProvider === 'HubSpot' ? (
                                     <>
                                         <div>
                                             <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Portal ID (Hub ID)</label>
-                                            <div className="relative">
-                                                <input 
-                                                    type="text" 
-                                                    value={tenantId}
-                                                    onChange={(e) => setTenantId(e.target.value)}
-                                                    placeholder="e.g. 45091238"
-                                                    className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-[#ff7a59] focus:border-[#ff7a59] outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
-                                                    required={!isConnected}
-                                                />
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                                    <Share2 className="w-4 h-4" />
-                                                </div>
-                                            </div>
+                                            <input type="text" value={tenantId} onChange={(e) => setTenantId(e.target.value)} placeholder="e.g. 45091238" className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-[#ff7a59] focus:border-[#ff7a59] outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm font-bold" required />
                                         </div>
                                         <div>
                                             <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Private App Token</label>
-                                            <div className="relative">
-                                                <input 
-                                                    type="password" 
-                                                    value={apiKey}
-                                                    onChange={(e) => setApiKey(e.target.value)}
-                                                    placeholder="pat-na1-..."
-                                                    className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-[#ff7a59] focus:border-[#ff7a59] outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
-                                                    required={!isConnected}
-                                                />
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                                    <ShieldCheck className="w-4 h-4" />
-                                                </div>
-                                            </div>
+                                            <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="pat-na1-..." className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-[#ff7a59] focus:border-[#ff7a59] outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm font-bold" required />
                                         </div>
                                     </>
-                                )}
-
-                                {selectedProvider === 'SAP S/4HANA' && (
+                                ) : (
                                     <>
                                         <div>
-                                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">S/4HANA API Endpoint</label>
-                                            <div className="relative">
-                                                <input 
-                                                    type="text" 
-                                                    value={environmentUrl}
-                                                    onChange={(e) => setEnvironmentUrl(e.target.value)}
-                                                    placeholder="https://api.s4hana.ondemand.com"
-                                                    className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
-                                                    required={!isConnected}
-                                                />
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                                    <Globe className="w-4 h-4" />
-                                                </div>
-                                            </div>
+                                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Endpoint URL</label>
+                                            <input type="text" value={environmentUrl} onChange={(e) => setEnvironmentUrl(e.target.value)} placeholder="https://..." className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm font-bold" required />
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Client ID</label>
-                                            <div className="relative">
-                                                <input 
-                                                    type="text" 
-                                                    value={apiKey}
-                                                    onChange={(e) => setApiKey(e.target.value)}
-                                                    placeholder="sb-clone-..."
-                                                    className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
-                                                    required={!isConnected}
-                                                />
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                                    <Hexagon className="w-4 h-4" />
-                                                </div>
-                                            </div>
+                                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Environment Token</label>
+                                            <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="••••••••" className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm font-bold" required />
                                         </div>
                                     </>
                                 )}
-
-                                {selectedProvider === 'FDE' && (
-                                     <>
-                                        <div>
-                                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">FDE Gateway Host</label>
-                                            <div className="relative">
-                                                <input 
-                                                    type="text" 
-                                                    value={environmentUrl}
-                                                    onChange={(e) => setEnvironmentUrl(e.target.value)}
-                                                    placeholder="gateway.fde-enterprise.net"
-                                                    className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
-                                                    required={!isConnected}
-                                                />
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                                    <Globe className="w-4 h-4" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Access Key</label>
-                                            <div className="relative">
-                                                <input 
-                                                    type="password" 
-                                                    value={apiKey}
-                                                    onChange={(e) => setApiKey(e.target.value)}
-                                                    placeholder="••••••••••••••••"
-                                                    className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
-                                                    required={!isConnected}
-                                                />
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                                    <ShieldCheck className="w-4 h-4" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-
-                                <div className="space-y-3 pt-2">
-                                    <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest">Enterprise Sync Scopes</label>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {[
-                                            { key: 'employees', label: 'HR Profiles', icon: UsersIcon },
-                                            { key: 'shifts', label: 'Shift Logic', icon: Calendar },
-                                            { key: 'timeOff', label: 'Payroll Data', icon: Calendar },
-                                            { key: 'performance', label: 'ERP KPIs', icon: Settings }
-                                        ].map((item) => (
-                                            <div 
-                                                key={item.key}
-                                                onClick={() => toggleConfig(item.key as keyof typeof syncConfig)}
-                                                className={`cursor-pointer p-3 rounded-xl border-2 flex items-center gap-3 transition-all ${
-                                                    syncConfig[item.key as keyof typeof syncConfig] 
-                                                    ? 'border-blue-600 bg-blue-50 text-blue-900 shadow-sm' 
-                                                    : 'border-slate-100 hover:border-slate-200 text-slate-500'
-                                                }`}
-                                            >
-                                                <div className={`w-5 h-5 rounded flex items-center justify-center border-2 ${
-                                                    syncConfig[item.key as keyof typeof syncConfig]
-                                                    ? 'bg-blue-600 border-blue-600'
-                                                    : 'bg-white border-slate-200'
-                                                }`}>
-                                                    {syncConfig[item.key as keyof typeof syncConfig] && <Check className="w-3.5 h-3.5 text-white" />}
-                                                </div>
-                                                <span className="text-xs font-black uppercase tracking-wider">{item.label}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
 
                                 <div className="pt-4">
-                                    <button 
-                                        type="submit"
-                                        className={`w-full py-4 text-white font-black text-xs uppercase tracking-[0.2em] rounded-xl shadow-lg transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 ${
-                                            selectedProvider === 'HubSpot' ? 'bg-[#ff7a59] hover:bg-[#ff8f75] shadow-orange-500/20' : 'bg-[#002050] hover:bg-[#003070] shadow-blue-900/20'
-                                        }`}
-                                    >
-                                        {isConnected ? 'Update Node Logic' : `Authorize ${selectedProvider} Node`}
+                                    <button type="submit" className={`w-full py-4 text-white font-black text-xs uppercase tracking-[0.2em] rounded-xl shadow-lg transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 ${selectedProvider === 'HubSpot' ? 'bg-[#ff7a59] hover:bg-[#ff8f75]' : 'bg-[#002050] hover:bg-[#003070]'}`}>
+                                        Authorize {selectedProvider} Node
                                     </button>
                                 </div>
                             </form>
                         </>
                     ) : (
-                        <div className="py-8 space-y-6 flex flex-col items-center justify-center min-h-[300px]">
+                        <div className="py-4 space-y-6 flex flex-col items-center justify-center min-h-[350px]">
                             <div className="relative">
-                                <div className={`w-20 h-20 rounded-full flex items-center justify-center animate-pulse ${
-                                    selectedProvider === 'HubSpot' ? 'bg-orange-50' : 'bg-blue-50'
-                                }`}>
-                                    {renderProviderIcon(selectedProvider, `w-8 h-8 ${selectedProvider === 'HubSpot' ? 'text-[#ff7a59]' : 'text-blue-600'}`)}
-                                </div>
-                                <div className="absolute top-0 right-0">
-                                    <span className="relative flex h-4 w-4">
-                                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                                        selectedProvider === 'HubSpot' ? 'bg-orange-400' : 'bg-blue-400'
-                                      }`}></span>
-                                      <span className={`relative inline-flex rounded-full h-4 w-4 ${
-                                        selectedProvider === 'HubSpot' ? 'bg-[#ff7a59]' : 'bg-blue-500'
-                                      }`}></span>
-                                    </span>
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center animate-pulse ${selectedProvider === 'HubSpot' ? 'bg-orange-50' : 'bg-blue-50'}`}>
+                                    {renderProviderIcon(selectedProvider, `w-6 h-6 ${selectedProvider === 'HubSpot' ? 'text-[#ff7a59]' : 'text-blue-600'}`)}
                                 </div>
                             </div>
                             
-                            <div className="w-full max-w-xs space-y-2">
-                                <div className="flex justify-between text-xs font-black uppercase tracking-widest text-slate-500">
-                                    <span>Syncing {selectedProvider}...</span>
+                            <div className="w-full space-y-4">
+                                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                    <span>Synchronizing Cloud Assets...</span>
                                     <span className={selectedProvider === 'HubSpot' ? 'text-[#ff7a59]' : 'text-blue-600'}>{syncProgress}%</span>
                                 </div>
-                                <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden border border-gray-200">
-                                    <div 
-                                        className={`h-full transition-all duration-200 ease-out relative ${
-                                            selectedProvider === 'HubSpot' ? 'bg-[#ff7a59]' : 'bg-blue-600'
-                                        }`}
-                                        style={{ width: `${syncProgress}%` }}
-                                    >
-                                        <div className="absolute inset-0 bg-white/20 animate-[shimmer_1s_infinite] border-r border-white/30"></div>
+                                
+                                <div className="bg-slate-950 rounded-lg p-4 font-mono text-[9px] text-emerald-400 h-32 overflow-hidden border border-slate-800 shadow-inner">
+                                    <div className="space-y-1">
+                                      {terminalLogs.map((log, i) => (
+                                        <div key={i} className="animate-in fade-in slide-in-from-bottom-1 duration-200 truncate">
+                                          <span className="text-slate-600 mr-2">>>></span> {log}
+                                        </div>
+                                      ))}
+                                      <div ref={logEndRef} />
                                     </div>
                                 </div>
-                                <p className="text-center text-[10px] text-slate-400 font-mono font-bold pt-2 uppercase tracking-wide">
-                                    {selectedProvider === 'HubSpot' ? (
-                                        syncProgress < 25 ? "Authenticating Private App Key..." :
-                                        syncProgress < 50 ? "Mapping Contact Properties..." :
-                                        syncProgress < 75 ? "Syncing Deal Stages..." :
-                                        "Finalizing CRM Handshake..."
-                                    ) : (
-                                        syncProgress < 25 ? "Initiating Handshake..." : 
-                                        syncProgress < 50 ? "Fetching Schema Definitions..." :
-                                        syncProgress < 75 ? "Validating Shift Patterns..." : 
-                                        "Finalizing Sentinel Protocol..."
-                                    )}
-                                </p>
+
+                                <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                                    <div className={`h-full transition-all duration-200 ease-out ${selectedProvider === 'HubSpot' ? 'bg-[#ff7a59]' : 'bg-blue-600'}`} style={{ width: `${syncProgress}%` }} />
+                                </div>
                             </div>
                         </div>
                     )}
@@ -524,8 +342,6 @@ const Scheduling: React.FC<SchedulingProps> = ({
       )}
 
       <div className="p-8 max-w-7xl mx-auto space-y-8">
-        
-        {/* ERP Integration Status */}
         {!isConnected ? (
              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-600/5 to-blue-600/20 rounded-full -mr-16 -mt-16 pointer-events-none transition-transform group-hover:scale-110 duration-700 blur-3xl"></div>
@@ -536,199 +352,94 @@ const Scheduling: React.FC<SchedulingProps> = ({
                    <div className="max-w-xl">
                      <h3 className="text-xl font-bold text-gray-900 mb-2 uppercase tracking-tight">Enterprise Data Nodes</h3>
                      <p className="text-gray-600 leading-relaxed text-sm font-medium">
-                        To enforce the Sentinel "Zone Defense" protocol, integrate a certified data environment. Supported protocols include <span className="text-blue-700 font-bold">Dynamics 365</span>, <span className="text-blue-700 font-bold">SAP S/4HANA</span>, <span className="text-blue-700 font-bold">FDE</span>, and <span className="text-[#ff7a59] font-bold">HubSpot</span>.
+                        Integrate a certified data environment. Supported protocols include <span className="text-blue-700 font-bold">Dynamics 365</span>, <span className="text-blue-700 font-bold">SAP S/4HANA</span>, and <span className="text-[#ff7a59] font-bold">HubSpot</span>.
                      </p>
                    </div>
                 </div>
-                <button 
-                    onClick={() => setIsModalOpen(true)}
-                    className="flex items-center gap-3 px-8 py-4 bg-[#002050] hover:bg-[#003070] text-white rounded-xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl z-10 whitespace-nowrap"
-                >
-                   <LinkIcon className="w-5 h-5" />
-                   Initialize Node
+                <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-3 px-8 py-4 bg-[#002050] hover:bg-[#003070] text-white rounded-xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl z-10 whitespace-nowrap">
+                   <LinkIcon className="w-5 h-5" /> Initialize Node
                 </button>
              </div>
         ) : (
-            <div className={`bg-white rounded-2xl shadow-sm border p-6 flex flex-col lg:flex-row items-center justify-between bg-gradient-to-r gap-6 ${
-                activeProvider === 'HubSpot' 
-                ? 'border-orange-100 from-white via-orange-50/20 to-orange-50/40' 
-                : 'border-blue-100 from-white via-blue-50/20 to-blue-50/40'
-            }`}>
+            <div className={`bg-white rounded-2xl shadow-sm border p-6 flex flex-col lg:flex-row items-center justify-between bg-gradient-to-r gap-6 ${activeProvider === 'HubSpot' ? 'border-orange-100 from-white via-orange-50/20 to-orange-50/40' : 'border-blue-100 from-white via-blue-50/20 to-blue-50/40'}`}>
                <div className="flex items-center gap-5 w-full lg:w-auto">
                   <div className="relative shrink-0">
-                      <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-white shadow-lg ring-4 ring-white ${
-                          activeProvider === 'HubSpot' ? 'bg-[#ff7a59]' : 'bg-[#002050]'
-                      }`}>
+                      <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-white shadow-lg ring-4 ring-white ${activeProvider === 'HubSpot' ? 'bg-[#ff7a59]' : 'bg-[#002050]'}`}>
                          {renderProviderIcon(activeProvider, "w-8 h-8")}
                       </div>
                       <div className={`absolute -bottom-1 -right-1 border-[3px] border-white w-6 h-6 rounded-full flex items-center justify-center shadow-sm ${getStatusColor(syncStatus)}`}>
                           {syncStatus === 'SYNCED' && <Check className="w-3.5 h-3.5 text-white" />}
                           {syncStatus === 'SYNCING' && <RefreshCw className="w-3.5 h-3.5 text-white animate-spin" />}
-                          {syncStatus === 'CONFLICT' && <AlertTriangle className="w-3.5 h-3.5 text-white" />}
                       </div>
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-gray-900 flex items-center gap-3 uppercase tracking-tight">
-                        {activeProvider} Node Online
-                    </h3>
-                    <div className="flex items-center gap-2">
-                        <p className="text-xs text-slate-700 font-mono font-black uppercase tracking-widest">Environment: <span className={activeProvider === 'HubSpot' ? 'text-[#ff7a59]' : 'text-blue-700'}>PRODUCTION-SECURE</span></p>
-                        <span className="text-gray-300">|</span>
-                        <p className={`text-xs font-mono font-black uppercase tracking-widest ${syncStatus === 'CONFLICT' ? 'text-red-600' : 'text-emerald-600'}`}>Status: {syncStatus}</p>
-                    </div>
+                    <h3 className="text-lg font-black text-gray-900 flex items-center gap-3 uppercase tracking-tight">{activeProvider} Node Online</h3>
+                    <p className="text-xs text-slate-700 font-mono font-black uppercase tracking-widest">Environment: <span className={activeProvider === 'HubSpot' ? 'text-[#ff7a59]' : 'text-blue-700'}>PRODUCTION-SECURE</span></p>
                   </div>
                </div>
                
                <div className="flex items-center gap-3 w-full lg:w-auto justify-end">
-                   <button 
-                       onClick={() => setIsModalOpen(true)}
-                       className="flex items-center gap-2 px-4 py-2.5 text-slate-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg text-xs font-black uppercase tracking-widest transition-all"
-                   >
-                       <Settings className="w-4 h-4" />
-                       Mapping
+                   <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-4 py-2.5 text-slate-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg text-xs font-black uppercase tracking-widest transition-all">
+                       <Settings className="w-4 h-4" /> Mapping
                    </button>
-                   <button 
-                       onClick={handleSync}
-                       disabled={isSyncing}
-                       className={`flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-slate-800 hover:bg-gray-50 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-sm ${isSyncing ? 'opacity-70 cursor-wait' : ''}`}
-                   >
-                      <RefreshCw className={`w-4 h-4 ${isSyncing ? (activeProvider === 'HubSpot' ? 'text-[#ff7a59]' : 'text-blue-600') : ''} ${isSyncing ? 'animate-spin' : ''}`} />
-                      {isSyncing ? 'Syncing...' : `Force ${activeProvider} Refresh`}
+                   <button onClick={handleSync} disabled={isSyncing} className={`flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-slate-800 hover:bg-gray-50 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-sm ${isSyncing ? 'opacity-70 cursor-wait' : ''}`}>
+                      <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} /> {isSyncing ? 'Syncing...' : `Force Refresh`}
                    </button>
                </div>
             </div>
         )}
 
-        {/* Dynamic Content Area */}
         <div className="space-y-6">
            <div className="flex items-center gap-4 border-b border-gray-200 pb-1">
-              <button 
-                onClick={() => setActiveTab('heatmap')}
-                className={`flex items-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-colors relative ${activeTab === 'heatmap' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                <Activity className="w-4 h-4" />
-                {activeProvider === 'HubSpot' ? 'CRM Traffic Analysis' : activeProvider === 'FDE' ? 'FDE Volume Heatmap' : activeProvider === 'SAP S/4HANA' ? 'S/4HANA Resource Map' : 'Dynamics Pulse Heatmap'}
+              <button onClick={() => setActiveTab('heatmap')} className={`flex items-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-colors relative ${activeTab === 'heatmap' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}>
+                <Activity className="w-4 h-4" /> Resource Allocation Variance
                 {activeTab === 'heatmap' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />}
               </button>
-              <button 
-                onClick={() => setActiveTab('logs')}
-                className={`flex items-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-colors relative ${activeTab === 'logs' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                <List className="w-4 h-4" />
-                {activeProvider === 'HubSpot' ? 'CRM Event Log' : 'ERP Transaction Log'}
+              <button onClick={() => setActiveTab('logs')} className={`flex items-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-colors relative ${activeTab === 'logs' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}>
+                <List className="w-4 h-4" /> Transaction Log
                 {activeTab === 'logs' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />}
               </button>
            </div>
 
            {activeTab === 'heatmap' ? (
               <div className="bg-slate-900 rounded-xl shadow-lg border border-slate-700 overflow-hidden">
-                <div className="p-6 border-b border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                   <div>
-                      <h2 className="text-lg font-black text-white uppercase tracking-wider">Resource Allocation Variance</h2>
-                      <p className="text-blue-400 text-xs font-mono font-bold mt-1 uppercase tracking-widest">
-                          "{activeProvider === 'HubSpot' ? 'Marketing Campaign Impact Analysis' : activeProvider === 'SAP S/4HANA' ? 'S/4HANA Consumption Analysis' : 'ERP Pipeline Ingress Analysis'}"
-                      </p>
-                   </div>
-                   
+                <div className="p-6 border-b border-slate-700 flex justify-between items-center">
+                   <h2 className="text-lg font-black text-white uppercase tracking-wider">Resource Allocation Heatmap</h2>
                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-blue-600 rounded"></div>
-                            <span className="text-[9px] text-slate-400 font-black uppercase">Volume</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-blue-900 rounded"></div>
-                            <span className="text-[9px] text-slate-400 font-black uppercase">Staffing</span>
-                        </div>
+                        <div className="flex items-center gap-2"><div className="w-3 h-3 bg-blue-600 rounded"></div><span className="text-[9px] text-slate-400 font-black uppercase">Volume</span></div>
+                        <div className="flex items-center gap-2"><div className="w-3 h-3 bg-blue-900 rounded"></div><span className="text-[9px] text-slate-400 font-black uppercase">Staffing</span></div>
                    </div>
                 </div>
-                
                 <div className="p-6 overflow-x-auto">
-                  <div className="min-w-[800px]">
-                    <div className="grid grid-cols-[150px_repeat(10,1fr)]">
+                  <div className="min-w-[800px] grid grid-cols-[150px_repeat(10,1fr)]">
                       <div className="flex flex-col justify-center space-y-16 text-slate-400 font-black text-[10px] uppercase tracking-widest pr-4 border-r border-slate-700">
                         <div className="h-24 flex items-center justify-end">Pipeline Volume</div>
                         <div className="h-24 flex items-center justify-end">Floor Deployment</div>
                       </div>
-
-                      {HEATMAP_DATA.map((point, index) => {
-                         let topColorClass = "bg-blue-600";
-                         if(point.efficiency > 80) topColorClass = "bg-emerald-500";
-                         else if(point.efficiency < 40) topColorClass = "bg-amber-500";
-                         
-                         // If HubSpot is active, simulate different volume data visually
-                         const displayVolume = activeProvider === 'HubSpot' ? Math.round(point.transactionVolume * 1.2) : point.transactionVolume;
-
-                         return (
+                      {HEATMAP_DATA.map((point, index) => (
                           <div key={index} className="flex flex-col relative group">
                             <div className="h-8 border-b border-slate-700 flex items-center justify-center text-slate-500 text-[9px] font-black uppercase">{point.hour}</div>
-                            
-                            <div className={`h-24 ${topColorClass} border-r border-slate-800/20 flex items-center justify-center text-white font-black text-lg group-hover:opacity-90 transition-opacity`}>
-                               {displayVolume}
-                            </div>
-                            <div className={`h-24 bg-blue-950 border-r border-slate-800/20 flex items-center justify-center text-blue-200 font-black text-lg relative`}>
-                               {point.staffing}
-                               <div className="absolute inset-0 bg-blue-400/5 group-hover:bg-blue-400/10 transition-colors"></div>
-                            </div>
-                            
-                            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-[10px] font-bold px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                                Eff: {point.efficiency}%
-                            </div>
+                            <div className={`h-24 bg-blue-600 border-r border-slate-800/20 flex items-center justify-center text-white font-black text-lg group-hover:opacity-90`}>{activeProvider === 'HubSpot' ? Math.round(point.transactionVolume * 1.2) : point.transactionVolume}</div>
+                            <div className={`h-24 bg-blue-950 border-r border-slate-800/20 flex items-center justify-center text-blue-200 font-black text-lg relative`}>{point.staffing}</div>
                           </div>
-                        );
-                      })}
+                        ))}
                     </div>
-                  </div>
-                </div>
-                
-                <div className="p-6 border-t border-slate-800 bg-slate-950 flex justify-between items-center">
-                    <p className="text-[10px] text-slate-500 font-mono">
-                        DATA SOURCE: <span className="text-emerald-500">VERIFIED</span> • LAST SYNC: <span className="text-white">JUST NOW</span>
-                    </p>
-                    
-                    <button 
-                        onClick={() => onFinalize?.()}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-blue-600/20"
-                    >
-                        Publish Schedule <ArrowRight className="w-3 h-3" />
-                    </button>
                 </div>
               </div>
            ) : (
              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex items-center gap-3 bg-gray-50/50">
-                    <List className="w-5 h-5 text-gray-400" />
-                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Ingress/Egress Logs</h3>
-                </div>
                 <div className="divide-y divide-gray-100">
                     {syncLogs.map((log, i) => (
-                        <div key={i} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div key={i} className="p-4 flex items-center justify-between hover:bg-gray-50">
                             <div className="flex items-center gap-4">
-                                <div className={`p-2 rounded-lg ${
-                                    log.status === 'Success' ? 'bg-emerald-100 text-emerald-600' : 
-                                    log.status === 'Pending' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'
-                                }`}>
-                                    {log.status === 'Success' ? <Check className="w-4 h-4" /> : 
-                                     log.status === 'Pending' ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
+                                <div className={`p-2 rounded-lg ${log.status === 'Success' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
+                                    {log.status === 'Success' ? <Check className="w-4 h-4" /> : <Loader2 className="w-4 h-4 animate-spin" />}
                                 </div>
-                                <div>
-                                    <p className="text-sm font-bold text-gray-900">{log.event}</p>
-                                    <p className="text-xs text-gray-500">Target: {log.target}</p>
-                                </div>
+                                <div><p className="text-sm font-bold text-gray-900">{log.event}</p><p className="text-xs text-gray-500">Target: {log.target}</p></div>
                             </div>
-                            <div className="text-right">
-                                <p className={`text-[10px] font-black uppercase tracking-widest ${
-                                    log.status === 'Success' ? 'text-emerald-600' : 
-                                    log.status === 'Pending' ? 'text-blue-600' : 'text-red-600'
-                                }`}>{log.status}</p>
-                                <p className="text-xs text-gray-400 font-mono mt-0.5">{log.time}</p>
-                            </div>
+                            <div className="text-right"><p className="text-[10px] font-black uppercase tracking-widest text-emerald-600">{log.status}</p><p className="text-xs text-gray-400 font-mono mt-0.5">{log.time}</p></div>
                         </div>
                     ))}
-                </div>
-                <div className="p-4 bg-gray-50 border-t border-gray-100 text-center">
-                    <button className="text-xs font-bold text-blue-600 hover:text-blue-700 uppercase tracking-widest flex items-center justify-center gap-2">
-                        <FileText className="w-3 h-3" /> Download Full Audit Log
-                    </button>
                 </div>
              </div>
            )}

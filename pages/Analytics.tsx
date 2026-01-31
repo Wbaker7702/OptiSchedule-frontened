@@ -1,14 +1,24 @@
 
 import React, { useState } from 'react';
 import Header from '../components/Header';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, Cell } from 'recharts';
-import { Download, FileText, TrendingUp, DollarSign, Users, Scale, Target, ArrowUpRight, Loader2, Database, ShieldCheck, ArrowUp, Megaphone, Heart, BarChart2, Layers } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, Cell, LineChart, Line } from 'recharts';
+import { Download, FileText, TrendingUp, DollarSign, Users, Scale, Target, ArrowUpRight, Loader2, Database, ShieldCheck, ArrowUp, Megaphone, Heart, BarChart2, Layers, Sparkles } from 'lucide-react';
 import { FISCAL_METRICS, HUBSPOT_METRICS } from '../constants';
 import { IntegrationStatus } from '../types';
 
 interface AnalyticsProps {
   hubspotStatus: IntegrationStatus;
 }
+
+const correlationData = [
+  { time: '08:00', crmLeads: 45, footTraffic: 220 },
+  { time: '10:00', crmLeads: 52, footTraffic: 380 },
+  { time: '12:00', crmLeads: 88, footTraffic: 420 },
+  { time: '14:00', crmLeads: 65, footTraffic: 310 },
+  { time: '16:00', crmLeads: 120, footTraffic: 580 },
+  { time: '18:00', crmLeads: 95, footTraffic: 490 },
+  { time: '20:00', crmLeads: 30, footTraffic: 210 },
+];
 
 const laborPivotData = [
   { week: 'W1', leakage: 186, recovered: 0 },
@@ -17,13 +27,6 @@ const laborPivotData = [
   { week: 'W4', leakage: 120, recovered: 66 },
   { week: 'W5', leakage: 80, recovered: 106 },
   { week: 'W6', leakage: 44, recovered: 142 },
-];
-
-const scalingData = [
-  { year: '2025', value: 4.68 },
-  { year: '2026', value: 7.2 },
-  { year: '2027', value: 11.5 },
-  { year: '2028', value: 16 },
 ];
 
 const getFormattedDate = (daysAgo: number) => {
@@ -43,7 +46,6 @@ const Analytics: React.FC<AnalyticsProps> = ({ hubspotStatus }) => {
 
   const handleDownloadReport = (report: typeof reports[0]) => {
     setDownloadingId(report.id);
-    
     setTimeout(() => {
       setDownloadingId(null);
     }, 1500);
@@ -54,41 +56,25 @@ const Analytics: React.FC<AnalyticsProps> = ({ hubspotStatus }) => {
       <Header title="Fiscal Oversight" subtitle="ROI Analysis & Labor Recapture Analytics" />
 
       <div className="p-8 max-w-7xl mx-auto space-y-8">
-        
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <div className="flex justify-between items-start mb-2">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Execution Leakage</p>
-                    <div className="p-1.5 bg-red-50 text-red-600 rounded-lg"><ArrowUp className="w-3 h-3" /></div>
-                </div>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Execution Leakage</p>
                 <h3 className="text-2xl font-black text-gray-900">${FISCAL_METRICS.executionLeakage.toLocaleString()}</h3>
                 <p className="text-xs text-red-500 font-bold mt-1">Weekly Exposure</p>
             </div>
-            
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <div className="flex justify-between items-start mb-2">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">ROI Multiplier</p>
-                    <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg"><TrendingUp className="w-3 h-3" /></div>
-                </div>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">ROI Multiplier</p>
                 <h3 className="text-2xl font-black text-gray-900">{FISCAL_METRICS.currentROI}x</h3>
                 <p className="text-xs text-emerald-500 font-bold mt-1">Sentinel Efficiency</p>
             </div>
-
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <div className="flex justify-between items-start mb-2">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Annual Recovery</p>
-                    <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><Target className="w-3 h-3" /></div>
-                </div>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Annual Recovery</p>
                 <h3 className="text-2xl font-black text-gray-900">${FISCAL_METRICS.annualRecoveryTarget}M</h3>
                 <p className="text-xs text-blue-500 font-bold mt-1">Target</p>
             </div>
-
              <div className="bg-slate-900 p-6 rounded-xl shadow-lg border border-slate-800">
-                <div className="flex justify-between items-start mb-2">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">2028 Vision</p>
-                    <div className="p-1.5 bg-slate-800 text-white rounded-lg"><ShieldCheck className="w-3 h-3" /></div>
-                </div>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">2028 Vision</p>
                 <h3 className="text-2xl font-black text-white">${FISCAL_METRICS.vision2028}M</h3>
                 <p className="text-xs text-slate-400 font-bold mt-1">Enterprise Value</p>
             </div>
@@ -106,100 +92,68 @@ const Analytics: React.FC<AnalyticsProps> = ({ hubspotStatus }) => {
                          <p className="text-xs text-gray-500 font-medium">CRM Ingress Node • Validating Campaign ROI against Staffing Deployment</p>
                      </div>
                  </div>
-                 <div className="flex items-center gap-3">
-                     <div className={`px-3 py-1 bg-white border rounded-lg flex items-center gap-2 ${hubspotStatus === 'connected' ? 'border-orange-200' : 'border-gray-200'}`}>
-                         <div className={`w-2 h-2 rounded-full ${hubspotStatus === 'connected' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
-                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">
-                             {hubspotStatus === 'connected' ? 'Live Sync Active' : 'Node Disconnected'}
-                         </span>
-                     </div>
+                 <div className={`px-3 py-1 bg-white border rounded-lg flex items-center gap-2 ${hubspotStatus === 'connected' ? 'border-orange-200' : 'border-gray-200'}`}>
+                     <div className={`w-2 h-2 rounded-full ${hubspotStatus === 'connected' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
+                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">
+                         {hubspotStatus === 'connected' ? 'Live Sync Active' : 'Node Disconnected'}
+                     </span>
                  </div>
              </div>
              
              <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
                  <div className="flex items-center gap-4">
-                     <div className={`p-3 rounded-lg ${hubspotStatus === 'connected' ? 'bg-orange-100 text-[#ff7a59]' : 'bg-gray-100 text-gray-400'}`}>
-                         <Megaphone className="w-5 h-5" />
-                     </div>
-                     <div>
-                         <p className="text-2xl font-black text-gray-900">{hubspotStatus === 'connected' ? HUBSPOT_METRICS.activeCampaigns : '-'}</p>
-                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Campaigns</p>
-                     </div>
+                     <div className={`p-3 rounded-lg ${hubspotStatus === 'connected' ? 'bg-orange-100 text-[#ff7a59]' : 'bg-gray-100 text-gray-400'}`}><Megaphone className="w-5 h-5" /></div>
+                     <div><p className="text-2xl font-black text-gray-900">{hubspotStatus === 'connected' ? HUBSPOT_METRICS.activeCampaigns : '-'}</p><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Campaigns</p></div>
                  </div>
-
                  <div className={`flex items-center gap-4 border-l pl-8 ${hubspotStatus === 'connected' ? 'border-orange-100' : 'border-gray-100'}`}>
-                     <div className={`p-3 rounded-lg ${hubspotStatus === 'connected' ? 'bg-orange-100 text-[#ff7a59]' : 'bg-gray-100 text-gray-400'}`}>
-                         <Heart className="w-5 h-5" />
-                     </div>
-                     <div>
-                         <p className="text-2xl font-black text-gray-900">{hubspotStatus === 'connected' ? HUBSPOT_METRICS.loyaltySignups.toLocaleString() : '-'}</p>
-                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Loyalty Signups</p>
-                     </div>
+                     <div className={`p-3 rounded-lg ${hubspotStatus === 'connected' ? 'bg-orange-100 text-[#ff7a59]' : 'bg-gray-100 text-gray-400'}`}><Heart className="w-5 h-5" /></div>
+                     <div><p className="text-2xl font-black text-gray-900">{hubspotStatus === 'connected' ? HUBSPOT_METRICS.loyaltySignups.toLocaleString() : '-'}</p><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Loyalty Signups</p></div>
                  </div>
-
                  <div className={`flex items-center gap-4 border-l pl-8 ${hubspotStatus === 'connected' ? 'border-orange-100' : 'border-gray-100'}`}>
-                     <div className={`p-3 rounded-lg ${hubspotStatus === 'connected' ? 'bg-orange-100 text-[#ff7a59]' : 'bg-gray-100 text-gray-400'}`}>
-                         <BarChart2 className="w-5 h-5" />
-                     </div>
-                     <div>
-                         <p className="text-2xl font-black text-gray-900">{hubspotStatus === 'connected' ? `$${(HUBSPOT_METRICS.attributedRevenue / 1000).toFixed(1)}k` : '-'}</p>
-                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Attributed Rev</p>
-                     </div>
+                     <div className={`p-3 rounded-lg ${hubspotStatus === 'connected' ? 'bg-orange-100 text-[#ff7a59]' : 'bg-gray-100 text-gray-400'}`}><BarChart2 className="w-5 h-5" /></div>
+                     <div><p className="text-2xl font-black text-gray-900">{hubspotStatus === 'connected' ? `$${(HUBSPOT_METRICS.attributedRevenue / 1000).toFixed(1)}k` : '-'}</p><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Attributed Rev</p></div>
                  </div>
              </div>
         </div>
 
-        {/* Charts Row */}
+        {/* Dual Chart Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                 <div className="flex justify-between items-center mb-6">
-                    <div>
-                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Labor Pivot Analysis</h3>
-                        <p className="text-xs text-gray-500 mt-1">Leakage vs. Recapture (Weekly)</p>
-                    </div>
-                    <Scale className="w-5 h-5 text-gray-300" />
+                    <div><h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Marketing vs. Foot Traffic</h3><p className="text-xs text-gray-500 mt-1">Correlation: HubSpot Engagement vs. Entrance Volume</p></div>
+                    <Sparkles className="w-5 h-5 text-orange-400" />
                 </div>
                 <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={laborPivotData}>
-                            <defs>
-                                <linearGradient id="colorLeakage" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1}/>
-                                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                                </linearGradient>
-                                <linearGradient id="colorRecovered" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
-                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                                </linearGradient>
-                            </defs>
+                        <LineChart data={correlationData}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 'bold'}} />
-                            <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 'bold'}} />
+                            <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 'bold'}} />
+                            <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 'bold'}} />
+                            <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 'bold'}} />
                             <Tooltip contentStyle={{backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0'}} />
-                            <Area type="monotone" dataKey="leakage" stroke="#ef4444" strokeWidth={2} fillOpacity={1} fill="url(#colorLeakage)" />
-                            <Area type="monotone" dataKey="recovered" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorRecovered)" />
-                        </AreaChart>
+                            <Legend wrapperStyle={{fontSize: '10px', fontWeight: '900', textTransform: 'uppercase'}} />
+                            <Line yAxisId="left" type="monotone" dataKey="crmLeads" stroke="#ff7a59" strokeWidth={3} dot={{r: 4}} activeDot={{r: 6}} name="HubSpot Deals" />
+                            <Line yAxisId="right" type="monotone" dataKey="footTraffic" stroke="#3b82f6" strokeWidth={3} dot={{r: 4}} activeDot={{r: 6}} name="Foot Traffic" />
+                        </LineChart>
                     </ResponsiveContainer>
                 </div>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                 <div className="flex justify-between items-center mb-6">
-                    <div>
-                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Fiscal Scaling Model</h3>
-                        <p className="text-xs text-gray-500 mt-1">Projected EBITDA Recovery (Millions)</p>
-                    </div>
-                    <TrendingUp className="w-5 h-5 text-gray-300" />
+                    <div><h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Labor Pivot Analysis</h3><p className="text-xs text-gray-500 mt-1">Leakage vs. Recapture (Weekly)</p></div>
+                    <Scale className="w-5 h-5 text-gray-300" />
                 </div>
                 <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={scalingData}>
+                        <AreaChart data={laborPivotData}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 'bold'}} />
+                            <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 'bold'}} />
                             <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 'bold'}} />
-                            <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0'}} />
-                            <Bar dataKey="value" fill="#002050" radius={[4, 4, 0, 0]} barSize={40} />
-                        </BarChart>
+                            <Tooltip contentStyle={{backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0'}} />
+                            <Area type="monotone" dataKey="leakage" stroke="#ef4444" strokeWidth={2} fill="#ef4444" fillOpacity={0.1} />
+                            <Area type="monotone" dataKey="recovered" stroke="#10b981" strokeWidth={2} fill="#10b981" fillOpacity={0.1} />
+                        </AreaChart>
                     </ResponsiveContainer>
                 </div>
             </div>
@@ -215,26 +169,16 @@ const Analytics: React.FC<AnalyticsProps> = ({ hubspotStatus }) => {
                  {reports.map(report => (
                      <div key={report.id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                          <div className="flex items-center gap-4">
-                             <div className="p-2 bg-gray-100 rounded text-gray-500">
-                                 <FileText className="w-4 h-4" />
-                             </div>
-                             <div>
-                                 <p className="text-sm font-bold text-gray-900">{report.name}</p>
-                                 <p className="text-xs text-gray-500">{report.date} • {report.size}</p>
-                             </div>
+                             <div className="p-2 bg-gray-100 rounded text-gray-500"><FileText className="w-4 h-4" /></div>
+                             <div><p className="text-sm font-bold text-gray-900">{report.name}</p><p className="text-xs text-gray-500">{report.date} • {report.size}</p></div>
                          </div>
-                         <button 
-                            onClick={() => handleDownloadReport(report)}
-                            className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
-                         >
-                            {downloadingId === report.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                            Download
+                         <button onClick={() => handleDownloadReport(report)} className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                            {downloadingId === report.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} Download
                          </button>
                      </div>
                  ))}
              </div>
         </div>
-
       </div>
     </div>
   );
