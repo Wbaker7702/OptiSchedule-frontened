@@ -11,71 +11,53 @@ export const CURRENT_USER = "Wesley Baker";
 export const STORE_NUMBER = "5065";
 // Dynamic Date: Always current
 export const DATE_STRING = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-export const APP_VERSION = "v3.4.0-Sentinel-AI-Live";
+export const APP_VERSION = "v3.4.1-Sentinel-AI-Live";
 export const BRAND_NAME = "OptiSchedule Pro";
 
 export const SYSTEM_HEALTH = {
-  status: 'Critical Failure',
-  uptime: 'Service Degraded',
-  latency: 'ERR_QUOTA',
-  environment: 'us-west1 (Quota Exceeded)',
+  status: 'Operational',
+  uptime: '99.99%',
+  latency: '24ms',
+  environment: 'us-west1 (Stable)',
   railsVersion: '8.0.0-Sentinel-Patch',
-  syncCycle: 'Halted (ProjectInitFailed)'
+  syncCycle: 'Active (Real-time)'
 };
 
 export const FISCAL_METRICS = {
   avgPayRate: 14.00,
   targetWeeklyHoursRecapture: 186,
-  executionLeakage: 90000,
-  currentROI: 10.3,
+  executionLeakage: 12500,
+  currentROI: 12.4,
   annualRecoveryTarget: 4.68,
   vision2028: 491,
   laborSurplusPct: 15,
 };
 
 export const OPERATIONAL_AUDITS: AuditLog[] = [
-  { id: 'aud-101', severity: 'error', code: 'POL-01', message: 'Compliance Breach: Variance > 15% in Front End Protocol', file: 'Dept: Front End', file_path: 'Dept: Front End', fix: 'Deploy Sentinel Protocol' },
-  { id: 'aud-102', severity: 'warning', code: 'SEC-04', message: 'Unauthorized Sync Latency (240ms) - Buffer Threat', file: 'Node: D365_Ingress', file_path: 'Node: D365_Ingress', fix: 'Purge Sync Cache' },
+  { id: 'aud-101', severity: 'info', code: 'POL-01', message: 'Protocol Check: Front End variance within tolerance (<2%)', file: 'Dept: Front End', file_path: 'Dept: Front End', fix: 'No action' },
+  { id: 'aud-102', severity: 'info', code: 'SEC-04', message: 'Sync Latency Nominal (24ms)', file: 'Node: D365_Ingress', file_path: 'Node: D365_Ingress', fix: 'No action' },
   { id: 'aud-103', severity: 'info', code: 'OPT_09', message: 'Optimal staffing achieved for peak hour', file: 'Schedule: Current_Cycle', file_path: 'Schedule: Current_Cycle', fix: 'No action' },
-  { id: 'aud-104', severity: 'error', code: 'FIS-02', message: 'Asset Depletion Risk: Critical Inventory Gap', file: 'Dept: Grocery', file_path: 'Dept: Grocery', fix: 'Force Re-stocking' },
-  { id: 'aud-105', severity: 'warning', code: 'LAB-02', message: 'Protocol Deviation: 12.5 surplus hrs unallocated', file: 'Dept: Apparel', file_path: 'Dept: Apparel', fix: 'Re-deploy Assets' },
+  { id: 'aud-104', severity: 'warning', code: 'FIS-02', message: 'Asset Depletion Risk: Restock advised', file: 'Dept: Grocery', file_path: 'Dept: Grocery', fix: 'Schedule Restock' },
+  { id: 'aud-105', severity: 'info', code: 'LAB-02', message: 'Protocol Adherence: 98.5%', file: 'Dept: Apparel', file_path: 'Dept: Apparel', fix: 'No action' },
   { id: 'aud-106', severity: 'info', code: 'CRM-01', message: 'HubSpot Data Ingress: 1250 Loyalty Signups Synced', file: 'Node: HubSpot_CRM', file_path: 'Node: HubSpot_CRM', fix: 'No action' },
 ];
 
 export const VULNERABILITY_DATA: Vulnerability[] = [
   { 
-    id: 'vul-004', 
-    title: 'Cloud Run Quota Breach', 
-    severity: 'Critical', 
-    description: 'Project initialization failed in us-west1 due to quota limits. Service optischedule-pro-walmart-store-5065 RoutesReady=False.', 
-    remediation: 'Request Quota Increase for Cloud Run API in us-west1.',
-    status: 'Detected',
-    category: 'Digital'
-  },
-  { 
     id: 'vul-001', 
     title: 'Workforce Leakage Vector', 
-    severity: 'Critical', 
-    description: '15% labor surplus unallocated in Apparel zone during peak surge.', 
-    remediation: 'Sentinel-Redirect: Auto-assign assets to Front End.',
-    status: 'Detected',
+    severity: 'Medium', 
+    description: 'Minor labor surplus detected in Apparel zone during off-peak.', 
+    remediation: 'Sentinel-Redirect: Optimization scheduled.',
+    status: 'Patching',
     category: 'Operational'
   },
   { 
-    id: 'vul-002', 
-    title: 'Sync Latency Drift', 
-    severity: 'High', 
-    description: 'Dynamics 365 ingress node exhibiting 240ms response jitter.', 
-    remediation: 'Patch: Clear D365 Cache & Initialize Sentinel Handshake.',
-    status: 'Detected',
-    category: 'Digital'
-  },
-  { 
     id: 'vul-003', 
-    title: 'Unauthorized Protocol Bypass', 
-    severity: 'Medium', 
+    title: 'Protocol Deviation', 
+    severity: 'Low', 
     description: 'Manual schedule override detected in Electronics department.', 
-    remediation: 'Sentinel-Lock: Revert to ROI-optimized deployment.',
+    remediation: 'Sentinel-Lock: Review pending.',
     status: 'Detected',
     category: 'Personnel'
   }
@@ -85,7 +67,7 @@ export const HUBSPOT_METRICS = {
   activeCampaigns: 4,
   loyaltySignups: 1250,
   attributedRevenue: 15400,
-  syncStatus: 'Disconnected'
+  syncStatus: 'Connected'
 };
 
 export const DYNAMICS_365_ROI_DATA = {

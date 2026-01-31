@@ -17,26 +17,26 @@ const data = [
 
 const Dashboard: React.FC = () => {
   const [pulseLogs, setPulseLogs] = useState<{id: number, msg: string, time: string}[]>([]);
-  const [complianceScore, setComplianceScore] = useState(90);
+  const [complianceScore, setComplianceScore] = useState(98);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [lastOptimized, setLastOptimized] = useState<string | null>(null);
   
   const [subMetrics, setSubMetrics] = useState({
-    enforcement: 94,
-    sync: 99.8,
+    enforcement: 98,
+    sync: 100,
     audit: 100
   });
 
   useEffect(() => {
     const messages = [
-      "CRITICAL: Quota Exceeded us-west1",
-      "ERROR: RoutesReady=False for optischedule-pro",
-      "SENTINEL_AUTH: Verification Front End",
-      "D365_INGRESS: Data Packet Validated",
-      "LINTER: Breach remediated Pharmacy",
-      "SYNC: Sub-millisecond latency locked",
+      "SYSTEM_HEALTH: All Nodes Operational",
+      "SENTINEL_AUTH: Verification Front End Success",
+      "D365_INGRESS: Data Packet Validated (12ms)",
+      "LINTER: Policy check passed 100%",
+      "SYNC: Real-time link established",
       "SSP: Sentinel Security Frame active",
-      "SCAN: 0 Operational Breaches Detected"
+      "SCAN: 0 Operational Breaches Detected",
+      "OPTIMIZER: Efficiency Target Reached"
     ];
     
     const interval = setInterval(() => {
@@ -61,10 +61,10 @@ const Dashboard: React.FC = () => {
     }, ...prev].slice(0, 5));
 
     setTimeout(() => {
-      const newScore = 99;
+      const newScore = 100;
       setComplianceScore(newScore);
       setSubMetrics({
-        enforcement: 99,
+        enforcement: 100,
         sync: 100,
         audit: 100
       });
@@ -95,13 +95,13 @@ const Dashboard: React.FC = () => {
            </div>
 
            <div className="flex items-center gap-6 w-full xl:w-auto relative z-10">
-              <div className="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20 shadow-inner group-hover:bg-blue-500/20 transition-all">
-                 <ShieldAlert className="w-10 h-10 text-blue-500" />
+              <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 shadow-inner group-hover:bg-emerald-500/20 transition-all">
+                 <ShieldCheck className="w-10 h-10 text-emerald-500" />
               </div>
               <div>
                  <div className="flex items-center gap-3 mb-1">
                     <h2 className="text-white font-black text-xl tracking-[0.1em] uppercase">Sentinel Security Mandate</h2>
-                    <span className="bg-blue-500 text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-[0.2em] animate-pulse">Monitoring</span>
+                    <span className="bg-emerald-500 text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-[0.2em] animate-pulse">System Secure</span>
                  </div>
                  <p className="text-slate-400 text-xs font-mono max-w-lg leading-relaxed uppercase">
                     "Execution Leakage" is a breach of policy. Every unallocated labor hour is a digital security failure. The Sentinel Security Policy must be enforced without variance.
@@ -114,9 +114,9 @@ const Dashboard: React.FC = () => {
                  <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest mb-1">Weekly Leakage</p>
                  <p className="text-xl font-black text-white">${Math.round(FISCAL_METRICS.executionLeakage / 1000)}k</p>
               </div>
-              <div className="bg-blue-500/5 p-4 rounded-xl border border-blue-500/20 flex flex-col items-center min-w-[130px]">
-                 <p className="text-[9px] text-blue-400 uppercase font-black tracking-widest mb-1">Policy ROI</p>
-                 <p className="text-xl font-black text-blue-400">{FISCAL_METRICS.currentROI}x</p>
+              <div className="bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/20 flex flex-col items-center min-w-[130px]">
+                 <p className="text-[9px] text-emerald-400 uppercase font-black tracking-widest mb-1">Policy ROI</p>
+                 <p className="text-xl font-black text-emerald-400">{FISCAL_METRICS.currentROI}x</p>
               </div>
            </div>
         </div>
@@ -128,9 +128,9 @@ const Dashboard: React.FC = () => {
               title="Sentinel Health" 
               value={SYSTEM_HEALTH.status}
               trend="Region: us-west1" 
-              trendDirection="down" 
-              subtitle={`Error: ${SYSTEM_HEALTH.latency}`}
-              icon={<ShieldAlert className="w-5 h-5 text-red-500 animate-pulse" />}
+              trendDirection="up" 
+              subtitle={`Latency: ${SYSTEM_HEALTH.latency}`}
+              icon={<CheckCircle2 className="w-5 h-5 text-emerald-500" />}
             />
             <StatCard 
               title="Compliance Index" 
@@ -141,21 +141,21 @@ const Dashboard: React.FC = () => {
             <StatCard 
               title="Active Vectors" 
               value={VULNERABILITY_DATA.length.toString()} 
-              subtitle="Monitoring for Drift"
-              icon={<Activity className="w-5 h-5 text-orange-500" />}
+              subtitle="All Systems Nominal"
+              icon={<ShieldCheck className="w-5 h-5 text-blue-500" />}
             />
           </div>
 
           <div className="bg-slate-900 rounded-xl border border-slate-800 p-5 shadow-sm overflow-hidden flex flex-col">
             <div className="flex items-center gap-2 mb-4">
-              <Terminal className="w-4 h-4 text-blue-500" />
+              <Terminal className="w-4 h-4 text-emerald-500" />
               <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Sentinel Pulse</h3>
             </div>
             <div className="space-y-3 flex-1 overflow-hidden">
                {pulseLogs.map(log => (
                  <div key={log.id} className="animate-in slide-in-from-bottom-1 fade-in duration-300">
                     <p className="text-[9px] font-mono text-slate-400 leading-tight uppercase">
-                        <span className="text-blue-500/50">[{log.time}]</span> {log.msg}
+                        <span className="text-emerald-500/50">[{log.time}]</span> {log.msg}
                     </p>
                  </div>
                ))}
@@ -244,15 +244,15 @@ const Dashboard: React.FC = () => {
               <div className="pt-4 border-t border-slate-800">
                  <button 
                   onClick={handleOptimizeProtocol}
-                  disabled={isOptimizing || complianceScore >= 99}
+                  disabled={isOptimizing || complianceScore >= 100}
                   className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${
-                    complianceScore >= 97 
+                    complianceScore >= 100 
                     ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 cursor-default' 
                     : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-600/20'
                   }`}
                  >
                    {isOptimizing ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                   {isOptimizing ? 'Hardening Protocol...' : 'Patch Vulnerabilities'}
+                   {complianceScore >= 100 ? 'Protocol Optimized' : 'Patch Vulnerabilities'}
                  </button>
               </div>
            </div>
