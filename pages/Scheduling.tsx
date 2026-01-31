@@ -16,10 +16,10 @@ type SyncStatus = 'SYNCED' | 'SYNCING' | 'CONFLICT' | 'OFFLINE';
 const Scheduling: React.FC<SchedulingProps> = ({ setCurrentView, onFinalize }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [activeProvider, setActiveProvider] = useState<ERPProvider>('Dynamics 365'); 
-  const [selectedProvider, setSelectedProvider] = useState<ERPProvider>('Dynamics 365'); 
+  const [selectedProvider, setSelectedProvider] = useState<ERPProvider>('SAP S/4HANA'); 
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [isFinalizing, setIsFinalizing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState(0);
   const [activeTab, setActiveTab] = useState<'heatmap' | 'logs'>('heatmap');
   
   // Conflict State
@@ -44,6 +44,7 @@ const Scheduling: React.FC<SchedulingProps> = ({ setCurrentView, onFinalize }) =
     performance: false
   });
 
+  // Dynamic logs based on active provider
   const syncLogs = [
     { event: 'Fetch Personnel Assets', target: activeProvider === 'SAP S/4HANA' ? 'SAP HCM' : activeProvider === 'FDE' ? 'FDE Gateway' : 'Finance & Ops', status: 'Success', time: '06:00 AM' },
     { event: 'Pipeline Sync', target: activeProvider === 'SAP S/4HANA' ? 'SAP Sales Cloud' : activeProvider === 'FDE' ? 'FDE Ledger' : 'Dynamics 365 Sales', status: 'Success', time: '06:05 AM' },
@@ -82,13 +83,26 @@ const Scheduling: React.FC<SchedulingProps> = ({ setCurrentView, onFinalize }) =
   const handleConnect = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSyncing(true);
-    setIsModalOpen(false);
-    setActiveProvider(selectedProvider);
-    setTimeout(() => {
-        isConnected ? null : setIsConnected(true);
-        setIsSyncing(false);
-        setSyncStatus('SYNCED');
-    }, 1500);
+    
+    // Start slow integration simulation
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += Math.floor(Math.random() * 8) + 2; // Increment by 2-10%
+        if (progress > 100) progress = 100;
+        setSyncProgress(progress);
+        
+        if (progress === 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+                setIsModalOpen(false);
+                setActiveProvider(selectedProvider);
+                setIsConnected(true);
+                setIsSyncing(false);
+                setSyncStatus('SYNCED');
+                setSyncProgress(0);
+            }, 600);
+        }
+    }, 200);
   };
 
   const toggleConfig = (key: keyof typeof syncConfig) => {
@@ -206,188 +220,229 @@ const Scheduling: React.FC<SchedulingProps> = ({ setCurrentView, onFinalize }) =
                         {renderProviderIcon(selectedProvider, "w-6 h-6 text-blue-400")}
                         {isConnected ? `${activeProvider} Settings` : 'Connect Enterprise ERP'}
                     </h3>
-                    <button onClick={() => setIsModalOpen(false)} className="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-full p-1">
-                        <X className="w-5 h-5" />
-                    </button>
+                    {!isSyncing && (
+                        <button onClick={() => setIsModalOpen(false)} className="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-full p-1">
+                            <X className="w-5 h-5" />
+                        </button>
+                    )}
                 </div>
                 
                 <div className="p-8">
-                    {!isConnected && (
-                        <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
-                            {(['Dynamics 365', 'SAP S/4HANA', 'FDE'] as ERPProvider[]).map((p) => (
-                                <button
-                                    key={p}
-                                    onClick={() => setSelectedProvider(p)}
-                                    className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
-                                        selectedProvider === p 
-                                        ? 'bg-white text-blue-900 shadow-sm' 
-                                        : 'text-gray-400 hover:text-gray-600'
-                                    }`}
-                                >
-                                    {p.replace('Dynamics ', 'D').replace('S/4HANA', 'HANA')}
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                    {!isSyncing ? (
+                        <>
+                            {!isConnected && (
+                                <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
+                                    {(['Dynamics 365', 'SAP S/4HANA', 'FDE'] as ERPProvider[]).map((p) => (
+                                        <button
+                                            key={p}
+                                            onClick={() => setSelectedProvider(p)}
+                                            className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
+                                                selectedProvider === p 
+                                                ? 'bg-white text-blue-900 shadow-sm' 
+                                                : 'text-gray-400 hover:text-gray-600'
+                                            }`}
+                                        >
+                                            {p.replace('Dynamics ', 'D').replace('S/4HANA', 'HANA')}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
 
-                    <p className="text-slate-700 text-sm mb-6 text-center leading-relaxed font-semibold">
-                        {isConnected 
-                          ? `Modify your ${activeProvider} environment settings below. Changes are enforced via the Sentinel Protocol.`
-                          : `Connect your ${selectedProvider} environment to synchronize enterprise resource planning and workforce deployment.`}
-                    </p>
+                            <p className="text-slate-700 text-sm mb-6 text-center leading-relaxed font-semibold">
+                                {isConnected 
+                                  ? `Modify your ${activeProvider} environment settings below. Changes are enforced via the Sentinel Protocol.`
+                                  : `Connect your ${selectedProvider} environment to synchronize enterprise resource planning and workforce deployment.`}
+                            </p>
 
-                    <form onSubmit={handleConnect} className="space-y-5">
-                        {selectedProvider === 'Dynamics 365' && (
-                            <>
-                                <div>
-                                    <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Environment URL</label>
-                                    <div className="relative">
-                                        <input 
-                                            type="text" 
-                                            value={environmentUrl}
-                                            onChange={(e) => setEnvironmentUrl(e.target.value)}
-                                            placeholder="https://org.crm.dynamics.com"
-                                            className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
-                                            required={!isConnected}
-                                        />
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                            <Globe className="w-4 h-4" />
+                            <form onSubmit={handleConnect} className="space-y-5">
+                                {selectedProvider === 'Dynamics 365' && (
+                                    <>
+                                        <div>
+                                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Environment URL</label>
+                                            <div className="relative">
+                                                <input 
+                                                    type="text" 
+                                                    value={environmentUrl}
+                                                    onChange={(e) => setEnvironmentUrl(e.target.value)}
+                                                    placeholder="https://org.crm.dynamics.com"
+                                                    className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
+                                                    required={!isConnected}
+                                                />
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                                    <Globe className="w-4 h-4" />
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Tenant ID (Azure AD)</label>
-                                    <div className="relative">
-                                        <input 
-                                            type="text" 
-                                            value={tenantId}
-                                            onChange={(e) => setTenantId(e.target.value)}
-                                            placeholder="00000000-0000-0000-0000-000000000000"
-                                            className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
-                                            required={!isConnected}
-                                        />
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                            <ShieldCheck className="w-4 h-4" />
+                                        <div>
+                                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Tenant ID (Azure AD)</label>
+                                            <div className="relative">
+                                                <input 
+                                                    type="text" 
+                                                    value={tenantId}
+                                                    onChange={(e) => setTenantId(e.target.value)}
+                                                    placeholder="00000000-0000-0000-0000-000000000000"
+                                                    className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
+                                                    required={!isConnected}
+                                                />
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                                    <ShieldCheck className="w-4 h-4" />
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </>
-                        )}
+                                    </>
+                                )}
 
-                        {selectedProvider === 'SAP S/4HANA' && (
-                            <>
-                                <div>
-                                    <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">S/4HANA API Endpoint</label>
-                                    <div className="relative">
-                                        <input 
-                                            type="text" 
-                                            value={environmentUrl}
-                                            onChange={(e) => setEnvironmentUrl(e.target.value)}
-                                            placeholder="https://api.s4hana.ondemand.com"
-                                            className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
-                                            required={!isConnected}
-                                        />
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                            <Globe className="w-4 h-4" />
+                                {selectedProvider === 'SAP S/4HANA' && (
+                                    <>
+                                        <div>
+                                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">S/4HANA API Endpoint</label>
+                                            <div className="relative">
+                                                <input 
+                                                    type="text" 
+                                                    value={environmentUrl}
+                                                    onChange={(e) => setEnvironmentUrl(e.target.value)}
+                                                    placeholder="https://api.s4hana.ondemand.com"
+                                                    className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
+                                                    required={!isConnected}
+                                                />
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                                    <Globe className="w-4 h-4" />
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Client ID</label>
-                                    <div className="relative">
-                                        <input 
-                                            type="text" 
-                                            value={apiKey}
-                                            onChange={(e) => setApiKey(e.target.value)}
-                                            placeholder="sb-clone-..."
-                                            className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
-                                            required={!isConnected}
-                                        />
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                            <Hexagon className="w-4 h-4" />
+                                        <div>
+                                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Client ID</label>
+                                            <div className="relative">
+                                                <input 
+                                                    type="text" 
+                                                    value={apiKey}
+                                                    onChange={(e) => setApiKey(e.target.value)}
+                                                    placeholder="sb-clone-..."
+                                                    className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
+                                                    required={!isConnected}
+                                                />
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                                    <Hexagon className="w-4 h-4" />
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </>
-                        )}
+                                    </>
+                                )}
 
-                        {selectedProvider === 'FDE' && (
-                             <>
-                                <div>
-                                    <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">FDE Gateway Host</label>
-                                    <div className="relative">
-                                        <input 
-                                            type="text" 
-                                            value={environmentUrl}
-                                            onChange={(e) => setEnvironmentUrl(e.target.value)}
-                                            placeholder="gateway.fde-enterprise.net"
-                                            className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
-                                            required={!isConnected}
-                                        />
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                            <Globe className="w-4 h-4" />
+                                {selectedProvider === 'FDE' && (
+                                     <>
+                                        <div>
+                                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">FDE Gateway Host</label>
+                                            <div className="relative">
+                                                <input 
+                                                    type="text" 
+                                                    value={environmentUrl}
+                                                    onChange={(e) => setEnvironmentUrl(e.target.value)}
+                                                    placeholder="gateway.fde-enterprise.net"
+                                                    className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
+                                                    required={!isConnected}
+                                                />
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                                    <Globe className="w-4 h-4" />
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Access Key</label>
-                                    <div className="relative">
-                                        <input 
-                                            type="password" 
-                                            value={apiKey}
-                                            onChange={(e) => setApiKey(e.target.value)}
-                                            placeholder="••••••••••••••••"
-                                            className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
-                                            required={!isConnected}
-                                        />
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                            <ShieldCheck className="w-4 h-4" />
+                                        <div>
+                                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Access Key</label>
+                                            <div className="relative">
+                                                <input 
+                                                    type="password" 
+                                                    value={apiKey}
+                                                    onChange={(e) => setApiKey(e.target.value)}
+                                                    placeholder="••••••••••••••••"
+                                                    className="w-full pl-4 pr-10 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder-slate-400 bg-white font-mono text-sm text-slate-900 font-bold"
+                                                    required={!isConnected}
+                                                />
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                                    <ShieldCheck className="w-4 h-4" />
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </>
-                        )}
+                                    </>
+                                )}
 
-                        <div className="space-y-3 pt-2">
-                            <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest">Enterprise Sync Scopes</label>
-                            <div className="grid grid-cols-2 gap-3">
-                                {[
-                                    { key: 'employees', label: 'HR Profiles', icon: UsersIcon },
-                                    { key: 'shifts', label: 'Shift Logic', icon: Calendar },
-                                    { key: 'timeOff', label: 'Payroll Data', icon: Calendar },
-                                    { key: 'performance', label: 'ERP KPIs', icon: Settings }
-                                ].map((item) => (
-                                    <div 
-                                        key={item.key}
-                                        onClick={() => toggleConfig(item.key as keyof typeof syncConfig)}
-                                        className={`cursor-pointer p-3 rounded-xl border-2 flex items-center gap-3 transition-all ${
-                                            syncConfig[item.key as keyof typeof syncConfig] 
-                                            ? 'border-blue-600 bg-blue-50 text-blue-900 shadow-sm' 
-                                            : 'border-slate-100 hover:border-slate-200 text-slate-500'
-                                        }`}
+                                <div className="space-y-3 pt-2">
+                                    <label className="block text-[10px] font-black text-slate-800 uppercase tracking-widest">Enterprise Sync Scopes</label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {[
+                                            { key: 'employees', label: 'HR Profiles', icon: UsersIcon },
+                                            { key: 'shifts', label: 'Shift Logic', icon: Calendar },
+                                            { key: 'timeOff', label: 'Payroll Data', icon: Calendar },
+                                            { key: 'performance', label: 'ERP KPIs', icon: Settings }
+                                        ].map((item) => (
+                                            <div 
+                                                key={item.key}
+                                                onClick={() => toggleConfig(item.key as keyof typeof syncConfig)}
+                                                className={`cursor-pointer p-3 rounded-xl border-2 flex items-center gap-3 transition-all ${
+                                                    syncConfig[item.key as keyof typeof syncConfig] 
+                                                    ? 'border-blue-600 bg-blue-50 text-blue-900 shadow-sm' 
+                                                    : 'border-slate-100 hover:border-slate-200 text-slate-500'
+                                                }`}
+                                            >
+                                                <div className={`w-5 h-5 rounded flex items-center justify-center border-2 ${
+                                                    syncConfig[item.key as keyof typeof syncConfig]
+                                                    ? 'bg-blue-600 border-blue-600'
+                                                    : 'bg-white border-slate-200'
+                                                }`}>
+                                                    {syncConfig[item.key as keyof typeof syncConfig] && <Check className="w-3.5 h-3.5 text-white" />}
+                                                </div>
+                                                <span className="text-xs font-black uppercase tracking-wider">{item.label}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="pt-4">
+                                    <button 
+                                        type="submit"
+                                        className="w-full py-4 bg-[#002050] hover:bg-[#003070] text-white font-black text-xs uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-blue-900/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
                                     >
-                                        <div className={`w-5 h-5 rounded flex items-center justify-center border-2 ${
-                                            syncConfig[item.key as keyof typeof syncConfig]
-                                            ? 'bg-blue-600 border-blue-600'
-                                            : 'bg-white border-slate-200'
-                                        }`}>
-                                            {syncConfig[item.key as keyof typeof syncConfig] && <Check className="w-3.5 h-3.5 text-white" />}
-                                        </div>
-                                        <span className="text-xs font-black uppercase tracking-wider">{item.label}</span>
+                                        {isConnected ? 'Update ERP Logic' : `Authorize ${selectedProvider} Node`}
+                                    </button>
+                                </div>
+                            </form>
+                        </>
+                    ) : (
+                        <div className="py-8 space-y-6 flex flex-col items-center justify-center min-h-[300px]">
+                            <div className="relative">
+                                <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center animate-pulse">
+                                    {renderProviderIcon(selectedProvider, "w-8 h-8 text-blue-600")}
+                                </div>
+                                <div className="absolute top-0 right-0">
+                                    <span className="relative flex h-4 w-4">
+                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                      <span className="relative inline-flex rounded-full h-4 w-4 bg-blue-500"></span>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div className="w-full max-w-xs space-y-2">
+                                <div className="flex justify-between text-xs font-black uppercase tracking-widest text-slate-500">
+                                    <span>Syncing {selectedProvider}...</span>
+                                    <span className="text-blue-600">{syncProgress}%</span>
+                                </div>
+                                <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden border border-gray-200">
+                                    <div 
+                                        className="bg-blue-600 h-full transition-all duration-200 ease-out relative"
+                                        style={{ width: `${syncProgress}%` }}
+                                    >
+                                        <div className="absolute inset-0 bg-white/20 animate-[shimmer_1s_infinite] border-r border-blue-400/50"></div>
                                     </div>
-                                ))}
+                                </div>
+                                <p className="text-center text-[10px] text-slate-400 font-mono font-bold pt-2 uppercase tracking-wide">
+                                    {syncProgress < 25 ? "Initiating Handshake..." : 
+                                     syncProgress < 50 ? "Fetching Schema Definitions..." :
+                                     syncProgress < 75 ? "Validating Shift Patterns..." : 
+                                     "Finalizing Sentinel Protocol..."}
+                                </p>
                             </div>
                         </div>
-
-                        <div className="pt-4">
-                            <button 
-                                type="submit"
-                                className="w-full py-4 bg-[#002050] hover:bg-[#003070] text-white font-black text-xs uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-blue-900/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
-                            >
-                                {isConnected ? 'Update ERP Logic' : `Authorize ${selectedProvider} Node`}
-                            </button>
-                        </div>
-                    </form>
+                    )}
                 </div>
             </div>
         </div>
