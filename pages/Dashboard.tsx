@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import StatCard from '../components/StatCard';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { CheckCircle2, Clock, ShieldAlert, ShieldCheck, Scale, TrendingUp, Zap, Database, Activity, Terminal, Server, Globe, Lock, RefreshCw, AlertTriangle, Loader2, Fingerprint, Shield } from 'lucide-react';
+import { CheckCircle2, Clock, ShieldAlert, ShieldCheck, Scale, TrendingUp, Zap, Database, Activity, Terminal, Server, Globe, Lock, RefreshCw, AlertTriangle, Loader2, Fingerprint, Shield, Sparkles, Share2, Tag } from 'lucide-react';
 import { DATE_STRING, FISCAL_METRICS, APP_VERSION, DYNAMICS_365_ROI_DATA, VULNERABILITY_DATA, SYSTEM_HEALTH } from '../constants';
 
 const data = [
@@ -21,6 +22,9 @@ const Dashboard: React.FC = () => {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [lastOptimized, setLastOptimized] = useState<string | null>(null);
   
+  // For demonstration, let's assume breeze is active if we want to show the widget
+  const isBreezeActive = true; 
+
   const [subMetrics, setSubMetrics] = useState({
     enforcement: 98,
     sync: 100,
@@ -35,7 +39,7 @@ const Dashboard: React.FC = () => {
       "LINTER: Policy check passed 100%",
       "SYNC: Real-time link established",
       "SSP: Sentinel Security Frame active",
-      "SCAN: 0 Operational Breaches Detected",
+      "BREEZE_SYNC: HubSpot Deal Flow Map Active",
       "OPTIMIZER: Efficiency Target Reached"
     ];
     
@@ -104,7 +108,7 @@ const Dashboard: React.FC = () => {
                     <span className="bg-emerald-500 text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-[0.2em] animate-pulse">System Secure</span>
                  </div>
                  <p className="text-slate-400 text-xs font-mono max-w-lg leading-relaxed uppercase">
-                    "Execution Leakage" is a breach of policy. Every unallocated labor hour is a digital security failure. The Sentinel Security Policy must be enforced without variance.
+                    "Execution Leakage" is a breach of policy. Every unallocated labor hour is a digital security failure.
                  </p>
               </div>
            </div>
@@ -138,12 +142,17 @@ const Dashboard: React.FC = () => {
               subtitle="Target: 100%"
               icon={<Fingerprint className="w-5 h-5 text-emerald-500" />}
             />
-            <StatCard 
-              title="Active Vectors" 
-              value={VULNERABILITY_DATA.length.toString()} 
-              subtitle="All Systems Nominal"
-              icon={<ShieldCheck className="w-5 h-5 text-blue-500" />}
-            />
+             <div className="bg-slate-900 p-6 rounded-xl shadow-sm border border-[#ff7a59]/30 relative overflow-hidden group hover:border-[#ff7a59] transition-all">
+                <div className="absolute top-0 right-0 p-2 opacity-5">
+                    <Sparkles className="w-12 h-12 text-[#ff7a59]" />
+                </div>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Breeze Forecast</p>
+                <div className="flex items-baseline gap-2 mt-1">
+                    <h3 className="text-2xl font-black text-white">+12%</h3>
+                    <span className="text-[10px] font-bold text-orange-400 uppercase">Traffic Surge</span>
+                </div>
+                <p className="text-[9px] text-slate-500 mt-2 font-mono">Deal Volume: HIGH (HubSpot Sync)</p>
+            </div>
           </div>
 
           <div className="bg-slate-900 rounded-xl border border-slate-800 p-5 shadow-sm overflow-hidden flex flex-col">
@@ -163,15 +172,18 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Compliance Circle and Charts */}
+        {/* Breeze Insight Widget */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-           {/* Charts Section */}
            <div className="lg:col-span-2 bg-slate-900 rounded-2xl shadow-xl border border-slate-800 p-6">
              <div className="flex justify-between items-center mb-6">
                <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
                  <Activity className="w-4 h-4 text-blue-500" />
                  Workforce Integrity Matrix
                </h3>
+               <div className="flex items-center gap-2 px-3 py-1 bg-orange-500/10 border border-orange-500/20 rounded-full">
+                  <Sparkles className="w-3 h-3 text-orange-400" />
+                  <span className="text-[9px] font-black text-orange-400 uppercase tracking-widest">Breeze Enhanced</span>
+               </div>
              </div>
              <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -180,6 +192,10 @@ const Dashboard: React.FC = () => {
                       <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorBreeze" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ff7a59" stopOpacity={0.1}/>
+                        <stop offset="95%" stopColor="#ff7a59" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
@@ -194,65 +210,52 @@ const Dashboard: React.FC = () => {
              </div>
            </div>
 
-           {/* Sentinel Compliance Card */}
-           <div className="bg-slate-900 rounded-2xl shadow-xl border border-slate-800 p-6 space-y-4 flex flex-col">
-              <div className="flex justify-between items-start">
-                 <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
-                    <ShieldCheck className={`w-4 h-4 ${complianceScore >= 97 ? 'text-emerald-500' : 'text-amber-500'}`} />
-                    Sentinel Status
-                 </h3>
+           {/* Breeze Smart-Traffic Card */}
+           <div className="bg-[#1c120f] rounded-2xl shadow-xl border border-[#ff7a59]/20 p-8 space-y-6 flex flex-col relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <Share2 className="w-24 h-24 text-[#ff7a59]" />
               </div>
-              
-              <div className="flex items-center justify-center py-4 relative">
-                 <div className="relative">
-                    <svg className="w-32 h-32 transform -rotate-90 transition-all duration-1000">
-                       <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="10" fill="transparent" className="text-slate-800" />
-                       <circle 
-                        cx="64" 
-                        cy="64" 
-                        r="58" 
-                        stroke="currentColor" 
-                        strokeWidth="10" 
-                        fill="transparent" 
-                        strokeDasharray={circumference} 
-                        strokeDashoffset={offset} 
-                        className={`transition-all duration-1000 rounded-full ${complianceScore >= 97 ? 'text-emerald-500' : 'text-blue-500'}`} 
-                       />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                       <span className={`text-2xl font-black tracking-tighter transition-colors duration-1000 ${complianceScore >= 97 ? 'text-white' : 'text-blue-400'}`}>
-                          {isOptimizing ? '---' : `${complianceScore}%`}
-                       </span>
-                       <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Hardened</span>
-                    </div>
-                 </div>
+              <div className="relative z-10">
+                  <div className="flex items-center gap-2 mb-4">
+                     <div className="p-2 bg-[#ff7a59]/20 rounded-lg border border-[#ff7a59]/30">
+                        <Sparkles className="w-4 h-4 text-[#ff7a59]" />
+                     </div>
+                     <h3 className="text-xs font-black text-white uppercase tracking-[0.2em]">Breeze Intelligence</h3>
+                  </div>
+                  
+                  <div className="space-y-4">
+                      <div className="bg-slate-900/50 p-4 rounded-xl border border-white/5">
+                          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Deal Surge Probability</p>
+                          <div className="flex justify-between items-center">
+                              <span className="text-xl font-black text-orange-400">88%</span>
+                              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                                <TrendingUp className="w-3 h-3" /> High Confidence
+                              </span>
+                          </div>
+                      </div>
+
+                      <div className="space-y-3">
+                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b border-white/5 pb-2">CRM Signal Feed</p>
+                         {[
+                           { event: "Coupon Code 'S5065' Redemptions (+15)", time: "Just Now" },
+                           { event: "Cart Abandonment Re-engagement Win", time: "2m ago" },
+                           { event: "Loyalty Platinum: 3 in proximity", time: "5m ago" }
+                         ].map((sig, i) => (
+                            <div key={i} className="flex gap-3">
+                               <Tag className="w-3 h-3 text-[#ff7a59] shrink-0 mt-0.5" />
+                               <div>
+                                  <p className="text-[10px] font-bold text-orange-100/80 leading-snug">{sig.event}</p>
+                                  <p className="text-[8px] font-mono text-[#ff7a59]/60 mt-0.5 uppercase tracking-widest">{sig.time}</p>
+                               </div>
+                            </div>
+                         ))}
+                      </div>
+                  </div>
               </div>
 
-              <div className="space-y-3 pt-2 flex-1">
-                 {[
-                   {label: "Policy Strength", val: `${subMetrics.enforcement}%`},
-                   {label: "Vulnerability Mitigation", val: `100%`},
-                   {label: "Audit Integrity", val: `${subMetrics.audit}%`}
-                 ].map(item => (
-                    <div key={item.label} className="flex justify-between items-center bg-slate-950 p-2 rounded-lg border border-slate-800">
-                       <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest">{item.label}</span>
-                       <span className="text-[10px] font-black text-white font-mono">{item.val}</span>
-                    </div>
-                 ))}
-              </div>
-
-              <div className="pt-4 border-t border-slate-800">
-                 <button 
-                  onClick={handleOptimizeProtocol}
-                  disabled={isOptimizing || complianceScore >= 100}
-                  className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${
-                    complianceScore >= 100 
-                    ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 cursor-default' 
-                    : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-600/20'
-                  }`}
-                 >
-                   {isOptimizing ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                   {complianceScore >= 100 ? 'Protocol Optimized' : 'Patch Vulnerabilities'}
+              <div className="mt-auto pt-6 border-t border-white/5">
+                 <button className="w-full py-3 bg-[#ff7a59] text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-orange-500/20 hover:bg-[#ff8f75] transition-all flex items-center justify-center gap-2">
+                    <Zap className="w-3 h-3 fill-white" /> Adjust Staffing Now
                  </button>
               </div>
            </div>
