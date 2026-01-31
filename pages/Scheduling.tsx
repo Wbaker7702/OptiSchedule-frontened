@@ -17,7 +17,7 @@ const Scheduling: React.FC<SchedulingProps> = ({ setCurrentView, onFinalize }) =
   const [isConnected, setIsConnected] = useState(false);
   const [activeProvider, setActiveProvider] = useState<ERPProvider>('Dynamics 365'); 
   const [selectedProvider, setSelectedProvider] = useState<ERPProvider>('Dynamics 365'); 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [activeTab, setActiveTab] = useState<'heatmap' | 'logs'>('heatmap');
@@ -40,7 +40,7 @@ const Scheduling: React.FC<SchedulingProps> = ({ setCurrentView, onFinalize }) =
   const [syncConfig, setSyncConfig] = useState({
     employees: true,
     shifts: true,
-    timeOff: true,
+    timeOff: false,
     performance: false
   });
 
@@ -112,7 +112,7 @@ const Scheduling: React.FC<SchedulingProps> = ({ setCurrentView, onFinalize }) =
 
   return (
     <div className="flex-1 bg-gray-50 overflow-auto relative text-gray-900">
-      <Header title="Scheduling Center" subtitle="Optimize workforce allocation based on customer flow patterns" />
+      <Header title="Scheduling Center" subtitle="Enterprise Edition v3.0.0 • Workforce Allocation Protocol" />
       
       {/* Conflict Resolution Modal */}
       {showConflictModal && (
