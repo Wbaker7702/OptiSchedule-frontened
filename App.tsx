@@ -13,7 +13,7 @@ import Login from './components/Login';
 import SentinelAI from './components/SentinelAI';
 import { View, ERPProvider, IntegrationStatus, HeatmapDataPoint } from './types';
 import { HEATMAP_DATA } from './constants';
-import { ShieldAlert, Lock, AlertTriangle, RefreshCw, Power, Terminal, Zap, Clock, ShieldX, Ban, Loader2 } from 'lucide-react';
+import { ShieldAlert, Lock, AlertTriangle, RefreshCw, Power, Terminal, Zap, Clock, ShieldX, Ban, Loader2, KeyRound, UserCheck } from 'lucide-react';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -23,7 +23,11 @@ const App: React.FC = () => {
 
   // Global Suspension State
   const [isSuspended, setIsSuspended] = useState(true);
-  const [timeLeft, setTimeLeft] = useState(36000); // 10 hours in seconds
+  const [isLaborLocked, setIsLaborLocked] = useState(true);
+  const [timeLeft, setTimeLeft] = useState(30600); // 8.5 hours in seconds
+  const [bypassPin, setBypassPin] = useState('');
+  const [pinError, setPinError] = useState(false);
+  const [isEnteringPin, setIsEnteringPin] = useState(false);
 
   useEffect(() => {
     let timer: number;
@@ -32,6 +36,7 @@ const App: React.FC = () => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             setIsSuspended(false);
+            setIsLaborLocked(false);
             return 0;
           }
           return prev - 1;
@@ -66,18 +71,32 @@ const App: React.FC = () => {
     setCurrentView(View.DASHBOARD);
   };
 
+  const handleAdminBypass = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Manager Bypass PIN: 5065 (Store Number)
+    if (bypassPin === '5065') {
+      setIsSuspended(false);
+      setIsLaborLocked(true); // System is accessed but labor remains hard-locked
+      setIsAuthenticated(true);
+    } else {
+      setPinError(true);
+      setTimeout(() => setPinError(false), 2000);
+    }
+  };
+
   const navigateToOperations = (tab: 'metrics' | 'audit' | 'vision' | 'scanner' = 'metrics') => {
     setOperationsTab(tab);
     setCurrentView(View.OPERATIONS);
   };
 
   const handleEmployeeAdded = () => {
+    if (isLaborLocked) return;
     setLinterTrigger('NEW_ASSET_SCAN');
     navigateToOperations('audit');
   };
 
   const handleStaffingAdjustment = () => {
-    if (isSuspended) return;
+    if (isSuspended || isLaborLocked) return;
     setHeatmapData(prev => prev.map(point => {
       if (point.efficiency < 80) {
         const newStaff = point.staffing + 2;
@@ -95,6 +114,7 @@ const App: React.FC = () => {
           <Dashboard 
             setCurrentView={setCurrentView} 
             onAdjustStaffing={handleStaffingAdjustment} 
+            isLaborLocked={isLaborLocked}
           />
         );
       case View.SCHEDULING:
@@ -109,6 +129,7 @@ const App: React.FC = () => {
             setHubspotStatus={setHubspotStatus}
             heatmapData={heatmapData}
             onAdjustStaffing={handleStaffingAdjustment}
+            isLaborLocked={isLaborLocked}
           />
         );
       case View.OPERATIONS:
@@ -117,6 +138,7 @@ const App: React.FC = () => {
             defaultTab={operationsTab} 
             externalTrigger={linterTrigger}
             onClearTrigger={() => setLinterTrigger(null)}
+            isLaborLocked={isLaborLocked}
           />
         );
       case View.INVENTORY:
@@ -124,13 +146,13 @@ const App: React.FC = () => {
       case View.ANALYTICS:
         return <Analytics hubspotStatus={hubspotStatus} />;
       case View.TEAM:
-        return <Team onEmployeeAdded={handleEmployeeAdded} />;
+        return <Team onEmployeeAdded={handleEmployeeAdded} isLaborLocked={isLaborLocked} />;
       case View.PLAYBOOK:
         return <Playbook setCurrentView={setCurrentView} />;
       case View.SETTINGS:
         return <Settings hubspotStatus={hubspotStatus} setHubspotStatus={setHubspotStatus} />;
       default:
-        return <Dashboard setCurrentView={setCurrentView} onAdjustStaffing={handleStaffingAdjustment} />;
+        return <Dashboard setCurrentView={setCurrentView} onAdjustStaffing={handleStaffingAdjustment} isLaborLocked={isLaborLocked} />;
     }
   };
 
@@ -158,14 +180,14 @@ const App: React.FC = () => {
             <div className="absolute top-0 left-0 w-full h-0.5 bg-amber-500/20 animate-pulse"></div>
             <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
               <Terminal className="w-4 h-4 text-slate-600" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Node Status: Restricted Access</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Node Status: Labor Services Disabled</span>
             </div>
             <div className="space-y-2 text-[11px] font-mono leading-relaxed">
-              <p><span className="text-amber-500/70">>></span> AUTH_SERVICE: <span className="text-amber-600 font-bold uppercase">Restricted</span></p>
-              <p><span className="text-amber-500/70">>></span> SYNC_PIPELINE: <span className="text-amber-600 font-bold uppercase">Paused</span></p>
-              <p><span className="text-amber-500/70">>></span> BREEZE_INGRESS: <span className="text-amber-600 font-bold uppercase">Standby</span></p>
+              <p><span className="text-amber-500/70">>></span> TIME_CLOCK: <span className="text-amber-600 font-bold uppercase">Locked</span></p>
+              <p><span className="text-amber-500/70">>></span> PAYROLL_SYNC: <span className="text-amber-600 font-bold uppercase">Paused</span></p>
+              <p><span className="text-amber-500/70">>></span> EMPLOYEE_AUTH: <span className="text-amber-600 font-bold uppercase">Offline</span></p>
               <p className="text-white pt-2 opacity-80 border-t border-slate-800 mt-2 italic">
-                "Operational protocol hold active. System services will resume automatically once the restoration sequence completes."
+                "Operational protocol hold active. Labor-related functions will remain unavailable until restoration sequence is completed."
               </p>
             </div>
           </div>
@@ -187,52 +209,12 @@ const App: React.FC = () => {
           </div>
 
           <div className="pt-4 flex flex-col items-center gap-4">
-             <div className="flex items-center gap-3 px-6 py-3 bg-amber-950/20 border border-amber-900/30 rounded-xl text-amber-500/80 text-[10px] font-black uppercase tracking-widest">
-                <Loader2 className="w-4 h-4 animate-spin" /> System Recalibrating
-             </div>
-             <button 
-              onClick={() => setIsSuspended(false)}
-              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all border border-slate-700 hover:border-slate-600"
-            >
-              <Power className="w-4 h-4" /> 
-              Admin Bypass
-              <div className="absolute inset-0 rounded-2xl bg-white/5 opacity-0 group-active:opacity-100 transition-opacity"></div>
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <div className="mt-12 flex items-center gap-4 text-slate-700">
-        <ShieldAlert className="w-5 h-5" />
-        <span className="text-xs font-black uppercase tracking-[0.3em]">Sentinel Operational Integrity Frame v3.4.1</span>
-      </div>
-    </div>
-  );
-
-  if (isSuspended) {
-    return <SuspensionScreen />;
-  }
-
-  if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} isSuspended={isSuspended} />;
-  }
-
-  return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar 
-        currentView={currentView} 
-        setCurrentView={(view) => {
-          if (view !== View.OPERATIONS) setOperationsTab('metrics');
-          setCurrentView(view);
-        }} 
-        onLogout={handleLogout}
-      />
-      <main className="flex-1 ml-64 flex flex-col h-screen relative">
-        {renderView()}
-        <SentinelAI hubspotStatus={hubspotStatus} />
-      </main>
-    </div>
-  );
-};
-
-export default App;
+             {isEnteringPin ? (
+               <form onSubmit={handleAdminBypass} className="w-full max-w-xs space-y-4 animate-in slide-in-from-bottom-2">
+                  <div className="relative">
+                    <input 
+                      type="password" 
+                      maxLength={4}
+                      value={bypassPin}
+                      onChange={(e) => setBypassPin(e.target.value)}
+                      placeholder="
