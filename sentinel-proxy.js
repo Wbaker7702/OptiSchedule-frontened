@@ -38,8 +38,8 @@ const loadEnvFile = (filename) => {
   });
 };
 
-loadEnvFile('.env');
 loadEnvFile('.env.local');
+loadEnvFile('.env');
 
 const API_KEY = process.env.GEMINI_API_KEY;
 const PORT = Number(process.env.SENTINEL_API_PORT ?? 3001);
