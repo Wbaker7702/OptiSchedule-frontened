@@ -4,21 +4,22 @@ We take security seriously and appreciate responsible disclosure.
 
 ## Supported Versions
 
-Security updates are provided for the latest version of this project only.
+Security fixes are provided for the latest code on the default branch (`main`) only.
 
 | Version | Supported |
 | ------- | --------- |
+| `main` | :white_check_mark: |
 | latest (default branch) | :white_check_mark: |
 | older builds/releases | :x: |
 
 ## Reporting a Vulnerability
 
-Please report security issues privately using GitHub Security Advisories:
+Please report security issues **privately** using GitHub Security Advisories (preferred). Do not open a public GitHub issue.
 
-1. Open the repository on GitHub.
-2. Navigate to the **Security** tab.
-3. Click **Report a vulnerability** and submit the details.
+- Report a vulnerability (private): https://github.com/Wbaker7702/OptiSchedule-pro/security/advisories/new
+- Or: open the repository on GitHub → **Security** tab → **Report a vulnerability**
 
+If you are unable to use GitHub Security Advisories, open a GitHub issue requesting a private contact channel **without including vulnerability details**.
 If the Security tab is unavailable, open a new issue titled **Security contact request**
 without including sensitive details. We will reply with a secure channel to continue the report.
 
@@ -29,6 +30,20 @@ without including sensitive details. We will reply with a secure channel to cont
 - Affected components, versions, or environments
 - Any proposed mitigations or workarounds
 - Logs, screenshots, or stack traces (if helpful)
+
+### Scope
+
+In scope:
+
+- Vulnerabilities in code and configuration contained in this repository (including the web app, local proxy/server code, and build/deploy scripts)
+- Vulnerabilities in published releases of this project (if any)
+
+Out of scope (examples):
+
+- Social engineering, phishing, or physical attacks
+- Denial of service (DoS) via excessive traffic volume
+- Reports that only describe missing security headers or best-practice recommendations without a demonstrated impact
+- Vulnerabilities in third-party dependencies (please report to the upstream project)
 
 ### Response timeline
 
