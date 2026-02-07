@@ -1,6 +1,6 @@
 {
   "name": "OptiSchedule Pro - Walmart Store 5065",
-  "description": "OptiSchedule Pro is a retail scheduling command center for Walmart Store 5065, combining Microsoft Dynamics 365 ERP signals, staffing heatmaps, and real-time operational insights.",
+  "description": "OptiSchedule Pro is a retail scheduling command center for Walmart stores, combining Microsoft Dynamics 365 ERP signals, staffing heatmaps, and real-time operational insights.",
   "requestFramePermissions": [
     "camera",
     "microphone"
