@@ -9,6 +9,7 @@ import Team from './pages/Team';
 import Analytics from './pages/Analytics';
 import Playbook from './pages/Playbook';
 import Settings from './pages/Settings';
+import Comparison from './pages/Comparison';
 import Login from './components/Login';
 import SentinelAI from './components/SentinelAI';
 import { View, ERPProvider, IntegrationStatus, HeatmapDataPoint } from './types';
@@ -67,6 +68,8 @@ const App: React.FC = () => {
             onAdjustStaffing={handleStaffingAdjustment} 
           />
         );
+      case View.COMPARISON:
+        return <Comparison />;
       case View.SCHEDULING:
         return (
           <Scheduling 

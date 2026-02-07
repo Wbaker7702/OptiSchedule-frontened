@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Header from '../components/Header';
-import { Calendar, RefreshCw, Link as LinkIcon, Check, X, ShieldCheck, Settings, Database, Users as UsersIcon, List, ArrowLeftRight, Activity, Globe, Server, Layers, Hexagon, AlertTriangle, ArrowRight, Share2, Loader2, FileText, Terminal, Zap, Sparkles, Fingerprint, Search, Shield, Info } from 'lucide-react';
+import { Calendar, RefreshCw, Link as LinkIcon, Check, X, ShieldCheck, Settings, Database, Users as UsersIcon, List, ArrowLeftRight, Activity, Globe, Server, Layers, Hexagon, AlertTriangle, ArrowRight, Share2, Loader2, FileText, Terminal, Zap, Sparkles, Fingerprint, Search, Shield, Info, UserCircle } from 'lucide-react';
 import { View, ERPProvider, IntegrationStatus, HeatmapDataPoint } from '../types';
+import { EMPLOYEES } from '../constants';
 
 interface SchedulingProps {
   setCurrentView?: (view: View) => void;
@@ -153,7 +154,7 @@ const Scheduling: React.FC<SchedulingProps> = ({
   };
 
   return (
-    <div className="flex-1 bg-gray-50 overflow-auto relative text-gray-900">
+    <div className="flex-1 bg-gray-50 overflow-auto relative text-gray-900 custom-scrollbar">
       <Header title="Scheduling Center" subtitle="Workforce Allocation & CRM Ingress" />
       
       {/* Breeze Connection Modal */}
@@ -364,8 +365,8 @@ const Scheduling: React.FC<SchedulingProps> = ({
             </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="lg:col-span-3 space-y-6">
                <div className="flex items-center gap-4 border-b border-slate-200 pb-1">
                   <button onClick={() => setActiveTab('heatmap')} className={`flex items-center gap-3 px-6 py-4 text-[11px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'heatmap' ? 'text-[#ff7a59]' : 'text-slate-400 hover:text-slate-600'}`}>
                     <Activity className="w-4 h-4" /> Labor Capacity Matrix
@@ -442,56 +443,76 @@ const Scheduling: React.FC<SchedulingProps> = ({
                )}
             </div>
 
-            {/* Breeze Copilot Inline Action */}
-            <div className="bg-[#1c120f] rounded-3xl shadow-2xl border border-[#ff7a59]/20 p-8 flex flex-col relative overflow-hidden h-fit sticky top-24">
-                <div className="absolute top-0 right-0 p-6 opacity-10">
-                    <Sparkles className="w-32 h-32 text-[#ff7a59]" />
+            <div className="space-y-6">
+                {/* Real Employee Deployment List */}
+                <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-6">
+                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <UsersIcon className="w-4 h-4 text-blue-600" />
+                        Recommended Deployment
+                    </h3>
+                    <div className="space-y-3">
+                        {EMPLOYEES.slice(0, 6).map((emp) => (
+                            <div key={emp.id} className="p-3 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3 hover:border-blue-500/20 transition-all cursor-pointer group">
+                                <img src={emp.avatar} alt={emp.name} className="w-8 h-8 rounded-full border border-white shadow-sm" />
+                                <div className="flex-1 overflow-hidden">
+                                    <p className="text-[10px] font-black text-slate-900 uppercase truncate">{emp.name}</p>
+                                    <p className="text-[8px] text-slate-500 font-mono uppercase truncate">{emp.role}</p>
+                                </div>
+                                <div className="bg-blue-500/10 text-blue-600 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                    Deploy
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <button className="w-full mt-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest border border-dashed border-slate-300 rounded-xl hover:bg-slate-50 transition-colors">
+                        View Full Roster
+                    </button>
                 </div>
-                <div className="relative z-10 space-y-6">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-[#ff7a59]/20 rounded-2xl border border-[#ff7a59]/30">
-                            <Zap className="w-6 h-6 text-[#ff7a59]" />
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-black text-white uppercase tracking-tighter">Breeze Copilot</h3>
-                            <p className="text-[10px] text-[#ff7a59]/60 font-mono uppercase tracking-widest">Active Intelligence</p>
-                        </div>
-                    </div>
 
-                    <div className="p-6 bg-slate-900/50 rounded-2xl border border-white/5 space-y-4">
-                        <div className="flex items-start justify-between">
-                          <p className="text-sm font-bold text-white/90 leading-relaxed">
-                              HubSpot signals indicate a <span className="text-orange-400">12% traffic surge</span> from campaign redemptions. Proactive adjustment advised to **prevent unplanned overtime**.
-                          </p>
-                          <div className="group relative cursor-help shrink-0 ml-2">
-                             <Info className="w-3 h-3 text-slate-600" />
-                             <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-slate-800 text-white text-[8px] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none border border-slate-700 font-mono leading-relaxed">
-                               TRAFFIC_SURGE Explanation: AI detection correlating digital deal redemptions with physical location check-ins via CRM Hub.
-                             </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                            <Check className="w-4 h-4 text-emerald-500" />
-                            Overtime Safeguard Active
-                        </div>
+                {/* Breeze Copilot Inline Action */}
+                <div className="bg-[#1c120f] rounded-3xl shadow-2xl border border-[#ff7a59]/20 p-8 flex flex-col relative overflow-hidden h-fit">
+                    <div className="absolute top-0 right-0 p-6 opacity-10">
+                        <Sparkles className="w-32 h-32 text-[#ff7a59]" />
                     </div>
+                    <div className="relative z-10 space-y-6">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-[#ff7a59]/20 rounded-2xl border border-[#ff7a59]/30">
+                                <Zap className="w-6 h-6 text-[#ff7a59]" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-white uppercase tracking-tighter">Breeze Copilot</h3>
+                                <p className="text-[10px] text-[#ff7a59]/60 font-mono uppercase tracking-widest">Active Intelligence</p>
+                            </div>
+                        </div>
 
-                    <div className="pt-4 border-t border-white/5">
-                        <button 
-                          onClick={handleAdjustStaffing}
-                          disabled={isAdjusting}
-                          className={`w-full py-5 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl transition-all flex items-center justify-center gap-4 active:scale-[0.98] disabled:opacity-50 ${showAdjustmentSuccess ? 'bg-emerald-600' : 'bg-[#ff7a59] hover:bg-[#ff8f75] shadow-orange-500/20'}`}
-                        >
-                            {isAdjusting ? (
-                              <Loader2 className="w-5 h-5 animate-spin" />
-                            ) : showAdjustmentSuccess ? (
-                              <Check className="w-5 h-5" />
-                            ) : (
-                              <Zap className="w-5 h-5 fill-white" />
-                            )}
-                            {isAdjusting ? 'Reallocating...' : showAdjustmentSuccess ? 'Deployment Adjusted' : 'Adjust Staffing Now'}
-                        </button>
-                        <p className="text-center text-[9px] text-slate-600 mt-4 uppercase font-black tracking-widest">Deployment logged in Labor Variance Audit</p>
+                        <div className="p-6 bg-slate-900/50 rounded-2xl border border-white/5 space-y-4 shadow-inner">
+                            <div className="flex items-start justify-between">
+                            <p className="text-sm font-bold text-white/90 leading-relaxed">
+                                HubSpot signals indicate a <span className="text-orange-400">12% traffic surge</span> from campaign redemptions. Proactive adjustment advised.
+                            </p>
+                            </div>
+                            <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                                <Check className="w-4 h-4" />
+                                Overtime Safeguard Active
+                            </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-white/5">
+                            <button 
+                            onClick={handleAdjustStaffing}
+                            disabled={isAdjusting}
+                            className={`w-full py-5 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl transition-all flex items-center justify-center gap-4 active:scale-[0.98] disabled:opacity-50 ${showAdjustmentSuccess ? 'bg-emerald-600' : 'bg-[#ff7a59] hover:bg-[#ff8f75] shadow-orange-500/20'}`}
+                            >
+                                {isAdjusting ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : showAdjustmentSuccess ? (
+                                <Check className="w-5 h-5" />
+                                ) : (
+                                <Zap className="w-5 h-5 fill-white" />
+                                )}
+                                {isAdjusting ? 'Reallocating...' : showAdjustmentSuccess ? 'Deployment Adjusted' : 'Adjust Staffing Now'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

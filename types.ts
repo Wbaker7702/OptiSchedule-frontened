@@ -8,6 +8,7 @@ export enum View {
   TEAM = 'TEAM',
   PLAYBOOK = 'PLAYBOOK',
   SETTINGS = 'SETTINGS',
+  COMPARISON = 'COMPARISON',
 }
 
 export type ERPProvider = 'Dynamics 365' | 'SAP S/4HANA' | 'FDE' | 'HubSpot';

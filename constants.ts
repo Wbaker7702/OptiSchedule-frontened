@@ -1,4 +1,3 @@
-
 import { Employee, Product, HeatmapDataPoint, DepartmentMetric, IngressDataPoint, Vulnerability, AuditLog } from './types';
 
 // Helper for relative dates
@@ -10,6 +9,7 @@ const getRelativeDate = (offsetDays: number) => {
 
 export const CURRENT_USER = "Wesley Baker";
 export const STORE_NUMBER = "5065";
+export const COMPARISON_STORE = "2080";
 // Dynamic Date: Always current
 export const DATE_STRING = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 export const APP_VERSION = "v3.4.1-Sentinel-AI-Live";
@@ -32,6 +32,15 @@ export const FISCAL_METRICS = {
   annualRecoveryTarget: 4.68,
   vision2028: 491,
   laborSurplusPct: 15,
+};
+
+export const STORE_2080_METRICS = {
+  executionLeakage: 4200, 
+  currentROI: 15.8,
+  laborSurplusPct: 4,
+  staffingEfficiency: 96,
+  weeklyTraffic: 48000,
+  hubspotGrowth: 8.2
 };
 
 export const OPERATIONAL_AUDITS: AuditLog[] = [
@@ -88,21 +97,16 @@ export const ENTERPRISE_INGRESS_HISTORY: IngressDataPoint[] = [
 ];
 
 export const EMPLOYEES: Employee[] = [
-  { id: '1', name: 'John Smith', role: 'Security Ops Lead', department: 'Front End', status: 'Active', performance: 4.8, email: 'john.smith@optischedule.com', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
-  { id: '2', name: 'Maria Chen', role: 'Protocol Manager', department: 'Grocery', status: 'Active', performance: 4.6, email: 'maria.chen@optischedule.com', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },
-  { id: '3', name: 'Alex Davis', role: 'Systems Specialist', department: 'Electronics', status: 'Training', performance: 4.3, email: 'alex.davis@optischedule.com', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' },
-  { id: '4', name: 'Sarah Johnson', role: 'Asset Protection', department: 'Front End', status: 'Active', performance: 4.5, email: 'sarah.j@optischedule.com', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop' },
-  { id: '5', name: 'Kevin Lee', role: 'Resource Agent', department: 'Apparel', status: 'Active', performance: 4.1, email: 'kevin.lee@optischedule.com', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop' },
-  { id: '6', name: 'Lisa Wilson', role: 'Inventory Control', department: 'Grocery', status: 'On Leave', performance: 4.4, email: 'lisa.w@optischedule.com', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop' },
-  { id: '7', name: 'Robert Brown', role: 'Logistics Lead', department: 'Home Goods', status: 'Active', performance: 4.7, email: 'robert.b@optischedule.com', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop' },
-  { id: '8', name: 'Tom Garcia', role: 'Compliance Officer', department: 'Pharmacy', status: 'Active', performance: 4.9, email: 'tom.garcia@optischedule.com', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop' },
-  { id: '9', name: 'Emma Wilson', role: 'Security Agent', department: 'Front End', status: 'Active', performance: 4.2, email: 'emma.w@optischedule.com', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop' },
-  { id: '10', name: 'Michael Scott', role: 'Regional Oversight', department: 'Electronics', status: 'Active', performance: 3.9, email: 'michael.s@optischedule.com', avatar: 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop' },
-  { id: '11', name: 'Pam Beesly', role: 'Admin Protocol', department: 'Front End', status: 'Active', performance: 4.7, email: 'pam.b@optischedule.com', avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&h=100&fit=crop' },
-  { id: '12', name: 'Dwight Schrute', role: 'Director of Operations', department: 'Operations', status: 'Active', performance: 5.0, email: 'dwight.s@optischedule.com', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop' },
-  { id: '13', name: 'Jim Halpert', role: 'Strategy Analyst', department: 'Home Goods', status: 'Active', performance: 4.5, email: 'jim.h@optischedule.com', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
-  { id: '14', name: 'Stanley Hudson', role: 'Efficiency Agent', department: 'Apparel', status: 'Active', performance: 3.2, email: 'stanley.h@optischedule.com', avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=100&h=100&fit=crop' },
-  { id: '15', name: 'Angela Martin', role: 'Audit Specialist', department: 'Pharmacy', status: 'Active', performance: 4.8, email: 'angela.m@optischedule.com', avatar: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?w=100&h=100&fit=crop' },
+  { id: '1', name: 'Sarah Jenkins', role: 'Front End Coach', department: 'Front End', status: 'Active', performance: 4.8, email: 's.jenkins@walmart-5065.com', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },
+  { id: '2', name: 'Robert Miles', role: 'Digital Coach', department: 'Operations', status: 'Active', performance: 4.6, email: 'r.miles@walmart-5065.com', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
+  { id: '3', name: 'Angela White', role: 'Stocking Coach', department: 'Grocery', status: 'Active', performance: 4.7, email: 'a.white@walmart-5065.com', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop' },
+  { id: '4', name: 'Michael Scott', role: 'Electronics Team Lead', department: 'Electronics', status: 'Active', performance: 4.3, email: 'm.scott@walmart-5065.com', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' },
+  { id: '5', name: 'Dwight Schrute', role: 'Grocery Team Lead', department: 'Grocery', status: 'Active', performance: 5.0, email: 'd.schrute@walmart-5065.com', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop' },
+  { id: '6', name: 'Jim Halpert', role: 'Apparel Team Lead', department: 'Apparel', status: 'Active', performance: 4.5, email: 'j.halpert@walmart-5065.com', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop' },
+  { id: '7', name: 'Pam Beesly', role: 'Front End Lead', department: 'Front End', status: 'Active', performance: 4.7, email: 'p.beesly@walmart-5065.com', avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&h=100&fit=crop' },
+  { id: '8', name: 'Stanley Hudson', role: 'Overnight Lead', department: 'Operations', status: 'Active', performance: 3.2, email: 's.hudson@walmart-5065.com', avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=100&h=100&fit=crop' },
+  { id: '9', name: 'Kevin Malone', role: 'Personal Associate', department: 'Front End', status: 'Active', performance: 3.8, email: 'k.malone@walmart-5065.com', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop' },
+  { id: '10', name: 'Oscar Martinez', role: 'Asset Protection', department: 'Front End', status: 'Active', performance: 4.9, email: 'o.martinez@walmart-5065.com', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop' },
 ];
 
 export const INVENTORY_DATA: Product[] = [
@@ -129,6 +133,9 @@ export const HEATMAP_DATA: HeatmapDataPoint[] = [
   { hour: '3 PM', transactionVolume: 90, staffing: 10, efficiency: 70 },
   { hour: '4 PM', transactionVolume: 140, staffing: 10, efficiency: 40 },
   { hour: '5 PM', transactionVolume: 170, staffing: 12, efficiency: 30 },
+  { hour: '6 PM', transactionVolume: 130, staffing: 10, efficiency: 50 },
+  { hour: '7 PM', transactionVolume: 90, staffing: 8, efficiency: 80 },
+  { hour: '8 PM', transactionVolume: 50, staffing: 6, efficiency: 95 },
 ];
 
 export const DEPARTMENT_METRICS: DepartmentMetric[] = [
