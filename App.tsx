@@ -10,6 +10,7 @@ import Analytics from './pages/Analytics';
 import Playbook from './pages/Playbook';
 import Settings from './pages/Settings';
 import Comparison from './pages/Comparison';
+import Marketplace from './pages/Marketplace'; // New Import
 import Login from './components/Login';
 import SentinelAI from './components/SentinelAI';
 import { View, ERPProvider, IntegrationStatus, HeatmapDataPoint } from './types';
@@ -21,29 +22,13 @@ const App: React.FC = () => {
   const [operationsTab, setOperationsTab] = useState<'metrics' | 'audit' | 'vision' | 'scanner'>('metrics');
   const [linterTrigger, setLinterTrigger] = useState<string | null>(null);
 
-  // Global Schedule State
   const [heatmapData, setHeatmapData] = useState<HeatmapDataPoint[]>(HEATMAP_DATA);
-
-  // Global Integration State
   const [activeERPProvider, setActiveERPProvider] = useState<ERPProvider>('Dynamics 365');
-  const [isERPConnected, setIsERPConnected] = useState(false);
-  const [hubspotStatus, setHubspotStatus] = useState<IntegrationStatus>('disconnected');
+  const [isERPConnected, setIsERPConnected] = useState(true);
+  const [hubspotStatus, setHubspotStatus] = useState<IntegrationStatus>('connected');
 
-  useEffect(() => {
-    const shouldBeConnected = hubspotStatus === 'connected';
-    if (isERPConnected !== shouldBeConnected) {
-      setIsERPConnected(shouldBeConnected);
-    }
-  }, [hubspotStatus, isERPConnected]);
-
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setCurrentView(View.DASHBOARD);
-  };
+  const handleLogin = () => setIsAuthenticated(true);
+  const handleLogout = () => { setIsAuthenticated(false); setCurrentView(View.DASHBOARD); };
 
   const navigateToOperations = (tab: 'metrics' | 'audit' | 'vision' | 'scanner' = 'metrics') => {
     setOperationsTab(tab);
@@ -58,9 +43,7 @@ const App: React.FC = () => {
   const handleStaffingAdjustment = () => {
     setHeatmapData(prev => prev.map(point => {
       if (point.efficiency < 80) {
-        const newStaff = point.staffing + 2;
-        const newEfficiency = Math.min(100, point.efficiency + 15);
-        return { ...point, staffing: newStaff, efficiency: newEfficiency };
+        return { ...point, staffing: point.staffing + 2, efficiency: Math.min(100, point.efficiency + 15) };
       }
       return point;
     }));
@@ -68,55 +51,21 @@ const App: React.FC = () => {
 
   const renderView = () => {
     switch (currentView) {
-      case View.DASHBOARD:
-        return (
-          <Dashboard 
-            setCurrentView={setCurrentView} 
-            onAdjustStaffing={handleStaffingAdjustment} 
-          />
-        );
-      case View.COMPARISON:
-        return <Comparison />;
-      case View.SCHEDULING:
-        return (
-          <Scheduling 
-            setCurrentView={setCurrentView} 
-            onFinalize={() => navigateToOperations('audit')}
-            activeProvider={activeERPProvider}
-            setActiveProvider={setActiveERPProvider}
-            isConnected={isERPConnected}
-            setIsConnected={setIsERPConnected}
-            setHubspotStatus={setHubspotStatus}
-            heatmapData={heatmapData}
-            onAdjustStaffing={handleStaffingAdjustment}
-          />
-        );
-      case View.OPERATIONS:
-        return (
-          <Operations 
-            defaultTab={operationsTab} 
-            externalTrigger={linterTrigger}
-            onClearTrigger={() => setLinterTrigger(null)}
-          />
-        );
-      case View.INVENTORY:
-        return <Inventory />;
-      case View.ANALYTICS:
-        return <Analytics hubspotStatus={hubspotStatus} />;
-      case View.TEAM:
-        return <Team onEmployeeAdded={handleEmployeeAdded} />;
-      case View.PLAYBOOK:
-        return <Playbook setCurrentView={setCurrentView} />;
-      case View.SETTINGS:
-        return <Settings hubspotStatus={hubspotStatus} setHubspotStatus={setHubspotStatus} />;
-      default:
-        return <Dashboard setCurrentView={setCurrentView} onAdjustStaffing={handleStaffingAdjustment} />;
+      case View.DASHBOARD: return <Dashboard setCurrentView={setCurrentView} onAdjustStaffing={handleStaffingAdjustment} />;
+      case View.MARKETPLACE: return <Marketplace />;
+      case View.COMPARISON: return <Comparison />;
+      case View.SCHEDULING: return <Scheduling setCurrentView={setCurrentView} onFinalize={() => navigateToOperations('audit')} activeProvider={activeERPProvider} setActiveProvider={setActiveERPProvider} isConnected={isERPConnected} setIsConnected={setIsERPConnected} setHubspotStatus={setHubspotStatus} heatmapData={heatmapData} onAdjustStaffing={handleStaffingAdjustment} />;
+      case View.OPERATIONS: return <Operations defaultTab={operationsTab} externalTrigger={linterTrigger} onClearTrigger={() => setLinterTrigger(null)} />;
+      case View.INVENTORY: return <Inventory />;
+      case View.ANALYTICS: return <Analytics hubspotStatus={hubspotStatus} />;
+      case View.TEAM: return <Team onEmployeeAdded={handleEmployeeAdded} />;
+      case View.PLAYBOOK: return <Playbook />;
+      case View.SETTINGS: return <Settings hubspotStatus={hubspotStatus} setHubspotStatus={setHubspotStatus} />;
+      default: return <Dashboard setCurrentView={setCurrentView} onAdjustStaffing={handleStaffingAdjustment} />;
     }
   };
 
-  if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} />;
-  }
+  if (!isAuthenticated) return <Login onLogin={handleLogin} />;
 
   return (
     <div className="flex h-screen bg-gray-50">

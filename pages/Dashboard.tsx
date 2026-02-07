@@ -1,11 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
-import StatCard from '../components/StatCard';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { CheckCircle2, Clock, ShieldAlert, ShieldCheck, Scale, TrendingUp, Zap, Database, Activity, Terminal, Server, Globe, Lock, RefreshCw, AlertTriangle, Loader2, Fingerprint, Shield, Sparkles, Share2, Tag, Check, Info, MapPin } from 'lucide-react';
-// Fixed: Removed DYNAMICS_365_ROI_DATA which is not exported from constants.ts
-import { DATE_STRING, FISCAL_METRICS, APP_VERSION, VULNERABILITY_DATA, SYSTEM_HEALTH, CURRENT_STATE, LABOR_REGULATIONS } from '../constants';
+import { CheckCircle2, ShieldCheck, Activity, Terminal, Server, Globe, Lock, Loader2, Shield, Cloud, Database, Zap, Cpu, Network } from 'lucide-react';
+import { DATE_STRING, FISCAL_METRICS, APP_VERSION, SYSTEM_HEALTH, CURRENT_STATE, LABOR_REGULATIONS, AZURE_TELEMETRY } from '../constants';
 import { View } from '../types';
 
 const data = [
@@ -18,28 +16,19 @@ const data = [
   { time: '8 PM', value: 45 },
 ];
 
-interface DashboardProps {
-  setCurrentView?: (view: View) => void;
-  onAdjustStaffing?: () => void;
-}
-
-const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, onAdjustStaffing }) => {
+const Dashboard: React.FC<{ setCurrentView?: (view: View) => void }> = () => {
   const [pulseLogs, setPulseLogs] = useState<{id: number, msg: string, time: string}[]>([]);
-  const [complianceScore, setComplianceScore] = useState(98);
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const [isBreezeAdjusting, setIsBreezeAdjusting] = useState(false);
-  const [lastOptimized, setLastOptimized] = useState<string | null>(null);
-  const [showBreezeSuccess, setShowBreezeSuccess] = useState(false);
 
   const reg = LABOR_REGULATIONS[CURRENT_STATE];
   
   useEffect(() => {
     const messages = [
-      "SYSTEM_HEALTH: All Nodes Operational",
-      `COMPLIANCE: ${reg.state} Labor Rules Active`,
-      "D365_INGRESS: Data Packet Validated",
-      "BREEZE_SYNC: HubSpot Deal Flow Map Active",
-      "SENTINEL: Minor Curfew Guard Active"
+      "AZURE_COMPUTE: East US 2 Node Nominal",
+      "D365_INGRESS: ERP Handshake Secure",
+      "BREEZE_SYNC: HubSpot Campaign Delta Processed",
+      "SENTINEL: Edge Vision Latency 14ms",
+      "CLOUD_FABRIC: High Availability Mode Active"
     ];
     
     const interval = setInterval(() => {
@@ -49,78 +38,111 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, onAdjustStaffing 
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       };
       setPulseLogs(prev => [newLog, ...prev].slice(0, 5));
-    }, 3000);
+    }, 4000);
 
     return () => clearInterval(interval);
-  }, [reg.state]);
-
-  const handleOptimizeProtocol = () => {
-    setIsOptimizing(true);
-    setTimeout(() => {
-      setComplianceScore(100);
-      setIsOptimizing(false);
-    }, 2000);
-  };
+  }, []);
 
   return (
-    <div className="flex-1 bg-slate-950 overflow-auto">
-      <Header title="Strategic Command Oversight" subtitle={`OptiSchedule Pro ${APP_VERSION} • ${reg.state} Node Active`} />
+    <div className="flex-1 bg-slate-950 overflow-auto custom-scrollbar">
+      <Header title="Strategic Command" subtitle={`Node #5065 • Triple-Engine Integration Active`} />
       
       <div className="p-8 max-w-7xl mx-auto space-y-6">
         
-        {/* Sentinel Fiscal & Compliance Section */}
-        <div className="bg-slate-900 rounded-2xl p-8 flex flex-col xl:flex-row items-center justify-between shadow-2xl border border-slate-800 gap-8 relative overflow-hidden group">
-           <div className="absolute -top-12 -right-12 p-4 opacity-5 pointer-events-none transition-transform group-hover:scale-110 duration-700">
-              <ShieldCheck className="w-80 h-80 text-white" />
+        {/* Triple Node Status Bar */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+           {/* Azure Cloud Fabric Card */}
+           <div className="bg-slate-900 rounded-2xl p-6 border border-[#0078d4]/30 shadow-2xl relative overflow-hidden group">
+              <div className="absolute -right-4 -top-4 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                 <Cloud className="w-24 h-24 text-[#0078d4]" />
+              </div>
+              <div className="flex items-center gap-4 mb-4">
+                 <div className="p-2 bg-[#0078d4]/10 rounded-lg border border-[#0078d4]/20">
+                    <Cloud className="w-5 h-5 text-[#0078d4]" />
+                 </div>
+                 <div>
+                    <h3 className="text-[10px] font-black text-white uppercase tracking-widest">Azure Cloud Fabric</h3>
+                    <p className="text-xs font-mono text-[#0078d4] font-bold">East US 2 • Nominal</p>
+                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                 <div className="bg-slate-950 p-2 rounded-lg border border-slate-800">
+                    <p className="text-[8px] text-slate-500 uppercase font-black">Latency</p>
+                    <p className="text-xs font-bold text-white">{AZURE_TELEMETRY.latency}</p>
+                 </div>
+                 <div className="bg-slate-950 p-2 rounded-lg border border-slate-800">
+                    <p className="text-[8px] text-slate-500 uppercase font-black">Compute</p>
+                    <p className="text-xs font-bold text-white">{AZURE_TELEMETRY.computeUsage}</p>
+                 </div>
+              </div>
            </div>
 
-           <div className="flex items-center gap-6 w-full xl:w-auto relative z-10">
-              <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 shadow-inner">
-                 <MapPin className="w-10 h-10 text-emerald-500" />
+           {/* Dynamics 365 ERP Card */}
+           <div className="bg-slate-900 rounded-2xl p-6 border border-blue-500/20 shadow-2xl relative overflow-hidden group">
+              <div className="absolute -right-4 -top-4 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                 <Database className="w-24 h-24 text-blue-500" />
               </div>
-              <div>
-                 <div className="flex items-center gap-3 mb-1">
-                    <h2 className="text-white font-black text-xl tracking-[0.1em] uppercase">Jurisdiction: {reg.state}</h2>
-                    <span className="bg-emerald-500 text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-[0.2em]">Compliance Verified</span>
+              <div className="flex items-center gap-4 mb-4">
+                 <div className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                    <Database className="w-5 h-5 text-blue-500" />
                  </div>
-                 <p className="text-slate-400 text-xs font-mono max-w-lg leading-relaxed uppercase">
-                    Monitoring labor limits for minors (under 18) and adult overtime thresholds per {reg.state} state law.
-                 </p>
+                 <div>
+                    <h3 className="text-[10px] font-black text-white uppercase tracking-widest">Dynamics 365 ERP</h3>
+                    <p className="text-xs font-mono text-blue-400 font-bold">Ledger Sync Active</p>
+                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                 <div className="bg-slate-950 p-2 rounded-lg border border-slate-800">
+                    <p className="text-[8px] text-slate-500 uppercase font-black">Leakage</p>
+                    <p className="text-xs font-bold text-white">${FISCAL_METRICS.executionLeakage.toLocaleString()}</p>
+                 </div>
+                 <div className="bg-slate-950 p-2 rounded-lg border border-slate-800">
+                    <p className="text-[8px] text-slate-500 uppercase font-black">ROI</p>
+                    <p className="text-xs font-bold text-white">{FISCAL_METRICS.currentROI}x</p>
+                 </div>
               </div>
            </div>
 
-           <div className="flex gap-4 w-full xl:w-auto z-10 items-center">
-              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col items-center min-w-[130px]">
-                 <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest mb-1">State Linter</p>
-                 <p className="text-xl font-black text-emerald-400">ACTIVE</p>
+           {/* HubSpot Breeze Card */}
+           <div className="bg-slate-900 rounded-2xl p-6 border border-[#ff7a59]/30 shadow-2xl relative overflow-hidden group">
+              <div className="absolute -right-4 -top-4 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                 <Zap className="w-24 h-24 text-[#ff7a59]" />
               </div>
-              <button 
-                onClick={handleOptimizeProtocol}
-                disabled={isOptimizing}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white p-4 rounded-xl border border-emerald-500/30 shadow-lg transition-all flex flex-col items-center min-w-[130px] active:scale-[0.98] disabled:opacity-50"
-              >
-                 <p className="text-[9px] text-emerald-100 uppercase font-black tracking-widest mb-1">
-                   Audit Score
-                 </p>
-                 <div className="flex items-center gap-2">
-                    {isOptimizing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Shield className="w-5 h-5" />}
-                    <p className="text-xl font-black">{complianceScore}%</p>
+              <div className="flex items-center gap-4 mb-4">
+                 <div className="p-2 bg-[#ff7a59]/10 rounded-lg border border-[#ff7a59]/20">
+                    <Zap className="w-5 h-5 text-[#ff7a59] fill-[#ff7a59]" />
                  </div>
-              </button>
+                 <div>
+                    <h3 className="text-[10px] font-black text-white uppercase tracking-widest">HubSpot Breeze</h3>
+                    <p className="text-xs font-mono text-[#ff7a59] font-bold">Loyalty Ingress Live</p>
+                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                 <div className="bg-slate-950 p-2 rounded-lg border border-slate-800">
+                    <p className="text-[8px] text-slate-500 uppercase font-black">Campaigns</p>
+                    <p className="text-xs font-bold text-white">4 Active</p>
+                 </div>
+                 <div className="bg-slate-950 p-2 rounded-lg border border-slate-800">
+                    <p className="text-[8px] text-slate-500 uppercase font-black">Leads</p>
+                    <p className="text-xs font-bold text-white">1.2k</p>
+                 </div>
+              </div>
            </div>
         </div>
 
-        {/* Chart Row */}
+        {/* Charts and Logs Row */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-3 bg-slate-900 rounded-2xl shadow-xl border border-slate-800 p-6">
+          <div className="lg:col-span-3 bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl relative">
              <div className="flex justify-between items-center mb-6">
                <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
-                 <Activity className="w-4 h-4 text-blue-500" />
-                 Workforce Integrity Matrix
+                 <Activity className="w-4 h-4 text-emerald-500" />
+                 Cognitive Deployment Matrix
                </h3>
-               <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
-                  <ShieldCheck className="w-3 h-3 text-blue-400" />
-                  <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">{reg.state} Guard Active</span>
+               <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Edge AI Processing</span>
+                  </div>
                </div>
              </div>
              <div className="h-64">
@@ -128,31 +150,33 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, onAdjustStaffing 
                   <AreaChart data={data}>
                     <defs>
                       <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#0078d4" stopOpacity={0.2}/>
+                        <stop offset="95%" stopColor="#0078d4" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
                     <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#64748b', fontWeight: 'bold'}} />
                     <YAxis hide />
                     <Tooltip contentStyle={{backgroundColor: '#0f172a', borderRadius: '12px', border: '1px solid #334155'}} />
-                    <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" />
+                    <Area type="monotone" dataKey="value" stroke="#0078d4" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
                   </AreaChart>
                 </ResponsiveContainer>
              </div>
           </div>
 
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-5 shadow-sm overflow-hidden flex flex-col">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="bg-slate-900 rounded-xl border border-slate-800 p-5 flex flex-col shadow-inner">
+            <div className="flex items-center gap-2 mb-4 border-b border-slate-800 pb-2">
               <Terminal className="w-4 h-4 text-emerald-500" />
-              <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Operational Pulse</h3>
+              <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Infrastructure Pulse</h3>
             </div>
-            <div className="space-y-3 flex-1 overflow-hidden">
+            <div className="space-y-4 flex-1 overflow-hidden font-mono">
                {pulseLogs.map(log => (
                  <div key={log.id} className="animate-in slide-in-from-bottom-1 fade-in duration-300">
-                    <p className="text-[9px] font-mono text-slate-400 leading-tight uppercase">
-                        <span className="text-emerald-500/50">[{log.time}]</span> {log.msg}
+                    <p className="text-[9px] text-slate-500 flex justify-between">
+                        <span>[{log.time}]</span>
+                        <span className="text-blue-500/50">AZ_E2_SYNC</span>
                     </p>
+                    <p className="text-[10px] text-slate-300 font-bold uppercase mt-0.5 truncate">{log.msg}</p>
                  </div>
                ))}
             </div>

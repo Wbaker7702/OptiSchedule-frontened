@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LayoutDashboard, CalendarDays, Activity, Package, BarChart3, Users, Settings as SettingsIcon, LogOut, ShieldCheck, ArrowLeftRight } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Activity, Package, BarChart3, Users, Settings as SettingsIcon, LogOut, ShieldCheck, ArrowLeftRight, Grid3X3 } from 'lucide-react';
 import { View } from '../types';
 import { APP_VERSION } from '../constants';
 
@@ -13,6 +13,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, onLogout }) => {
   const menuItems = [
     { id: View.DASHBOARD, label: 'Strategic Command', icon: LayoutDashboard },
+    { id: View.MARKETPLACE, label: 'Module Manager', icon: Grid3X3 },
     { id: View.COMPARISON, label: 'Market Comparison', icon: ArrowLeftRight },
     { id: View.SCHEDULING, label: 'Deployment Center', icon: CalendarDays },
     { id: View.OPERATIONS, label: 'Operational Hub', icon: Activity },
@@ -31,7 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, onLogout
           </div>
           <div className="overflow-hidden">
             <h1 className="font-black text-sm uppercase tracking-[0.1em] leading-tight text-white truncate">OptiSchedule</h1>
-            <p className="text-[10px] text-blue-400 font-mono font-bold uppercase tracking-widest truncate">Pro v3.1</p>
+            <p className="text-[10px] text-blue-400 font-mono font-bold uppercase tracking-widest truncate">Pro v4.0.0</p>
           </div>
         </div>
       </div>

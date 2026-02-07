@@ -9,9 +9,23 @@ export enum View {
   PLAYBOOK = 'PLAYBOOK',
   SETTINGS = 'SETTINGS',
   COMPARISON = 'COMPARISON',
+  MARKETPLACE = 'MARKETPLACE'
 }
 
-export type ERPProvider = 'Dynamics 365' | 'SAP S/4HANA' | 'FDE' | 'HubSpot';
+export type PluginCategory = 'CRM' | 'ERP' | 'Jurisdiction' | 'AI_Agent' | 'Vision' | 'Cloud';
+
+export interface SystemPlugin {
+  id: string;
+  name: string;
+  category: PluginCategory;
+  provider: string;
+  description: string;
+  version: string;
+  status: 'Mounted' | 'Available' | 'Locked';
+  iconName: string;
+}
+
+export type ERPProvider = 'Dynamics 365' | 'SAP S/4HANA' | 'FDE' | 'HubSpot' | 'Azure';
 export type IntegrationStatus = 'connected' | 'disconnected';
 
 export interface Employee {
@@ -23,7 +37,7 @@ export interface Employee {
   performance: number;
   email: string;
   avatar: string;
-  age: number; // Added for labor law logic
+  age: number;
   isMinor: boolean;
 }
 
@@ -34,8 +48,8 @@ export interface LaborLawConfig {
   maxShiftMinor1415: number;
   curfewMinor1617: string;
   curfewMinor1415: string;
-  mandatoryBreakThreshold: number; // Hours
-  mandatoryBreakDuration: number; // Minutes
+  mandatoryBreakThreshold: number;
+  mandatoryBreakDuration: number;
 }
 
 export interface Product {
@@ -52,7 +66,7 @@ export interface HeatmapDataPoint {
   hour: string;
   transactionVolume: number;
   staffing: number;
-  efficiency: number; // 0-100 scale for color
+  efficiency: number;
 }
 
 export interface DepartmentMetric {
@@ -67,7 +81,7 @@ export interface DepartmentMetric {
 export interface IngressDataPoint {
   date: string;
   volume: number;
-  source: 'Dynamics 365' | 'HubSpot' | 'Sentinel Node';
+  source: 'Dynamics 365' | 'HubSpot' | 'Sentinel Node' | 'Azure Edge';
   growth: number;
   status: 'Verified' | 'Syncing' | 'Hardened';
 }
@@ -87,7 +101,7 @@ export interface AuditLog {
   severity: 'error' | 'warning' | 'info';
   code: string;
   message: string;
-  file: string; // Maps to 'Entity' in CSV
-  file_path: string; // Kept for compatibility
-  fix: string; // Maps to 'Fix Action' in CSV
+  file: string;
+  file_path: string;
+  fix: string;
 }
