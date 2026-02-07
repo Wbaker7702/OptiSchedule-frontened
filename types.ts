@@ -10,7 +10,8 @@ export enum View {
   SETTINGS = 'SETTINGS',
   COMPARISON = 'COMPARISON',
   MARKETPLACE = 'MARKETPLACE',
-  METRICS_REPORT = 'METRICS_REPORT'
+  METRICS_REPORT = 'METRICS_REPORT',
+  ROYALTY_DASHBOARD = 'ROYALTY_DASHBOARD'
 }
 
 export type PluginCategory = 'CRM' | 'ERP' | 'Jurisdiction' | 'AI_Agent' | 'Vision' | 'Cloud';

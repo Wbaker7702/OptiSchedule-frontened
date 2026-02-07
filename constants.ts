@@ -7,6 +7,24 @@ export const COMPARISON_STORE = "2080";
 export const APP_VERSION = "v4.1.0-Azure-Cloud";
 export const CURRENT_STATE = "MI";
 
+export const ROYALTY_METRICS = {
+  baselineLaborSalesPct: 25.0,
+  currentLaborSalesPct: 21.8,
+  royaltyRate: 0.15,
+  backPayMonthsSettled: 1,
+  backPayMonthsTotal: 3,
+  backPayStatus: 'Pending' as 'Pending' | 'Settled',
+  backPayPeriod: {
+    start: '2025-11-01',
+    end: '2026-02-01',
+    totalSales: 1250000,
+    historicalLaborPct: 25.4,
+    optimizedLaborPct: 22.1,
+    recapturedValue: 41250,
+    creatorRoyalty: 6187.50
+  }
+};
+
 export const STORE_2080_METRICS = {
   avgPayRate: 15.20,
   targetWeeklyHoursRecapture: 245,

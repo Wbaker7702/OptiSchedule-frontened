@@ -11,7 +11,8 @@ import Playbook from './pages/Playbook';
 import Settings from './pages/Settings';
 import Comparison from './pages/Comparison';
 import Marketplace from './pages/Marketplace';
-import MetricsReport from './pages/MetricsReport'; // New Import
+import MetricsReport from './pages/MetricsReport';
+import RoyaltyDashboard from './pages/RoyaltyDashboard'; // New Import
 import Login from './components/Login';
 import SentinelAI from './components/SentinelAI';
 import { View, ERPProvider, IntegrationStatus, HeatmapDataPoint } from './types';
@@ -52,9 +53,10 @@ const App: React.FC = () => {
 
   const renderView = () => {
     switch (currentView) {
-      case View.DASHBOARD: return <Dashboard setCurrentView={setCurrentView} onAdjustStaffing={handleStaffingAdjustment} />;
+      case View.DASHBOARD: return <Dashboard setCurrentView={setCurrentView} />;
       case View.MARKETPLACE: return <Marketplace />;
       case View.METRICS_REPORT: return <MetricsReport />;
+      case View.ROYALTY_DASHBOARD: return <RoyaltyDashboard />; // New Case
       case View.COMPARISON: return <Comparison />;
       case View.SCHEDULING: return <Scheduling setCurrentView={setCurrentView} onFinalize={() => navigateToOperations('audit')} activeProvider={activeERPProvider} setActiveProvider={setActiveERPProvider} isConnected={isERPConnected} setIsConnected={setIsERPConnected} setHubspotStatus={setHubspotStatus} heatmapData={heatmapData} onAdjustStaffing={handleStaffingAdjustment} />;
       case View.OPERATIONS: return <Operations defaultTab={operationsTab} externalTrigger={linterTrigger} onClearTrigger={() => setLinterTrigger(null)} />;
@@ -63,7 +65,7 @@ const App: React.FC = () => {
       case View.TEAM: return <Team onEmployeeAdded={handleEmployeeAdded} />;
       case View.PLAYBOOK: return <Playbook />;
       case View.SETTINGS: return <Settings hubspotStatus={hubspotStatus} setHubspotStatus={setHubspotStatus} />;
-      default: return <Dashboard setCurrentView={setCurrentView} onAdjustStaffing={handleStaffingAdjustment} />;
+      default: return <Dashboard setCurrentView={setCurrentView} />;
     }
   };
 

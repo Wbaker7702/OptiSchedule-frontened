@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LayoutDashboard, CalendarDays, Activity, Package, BarChart3, Users, Settings as SettingsIcon, LogOut, ShieldCheck, ArrowLeftRight, Grid3X3, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Activity, Package, BarChart3, Users, Settings as SettingsIcon, LogOut, ShieldCheck, ArrowLeftRight, Grid3X3, TrendingUp, Coins } from 'lucide-react';
 import { View } from '../types';
 import { APP_VERSION } from '../constants';
 
@@ -13,13 +13,13 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, onLogout }) => {
   const menuItems = [
     { id: View.DASHBOARD, label: 'Strategic Command', icon: LayoutDashboard },
-    { id: View.MARKETPLACE, label: 'Module Manager', icon: Grid3X3 },
+    { id: View.ROYALTY_DASHBOARD, label: 'Royalty Node', icon: Coins },
     { id: View.METRICS_REPORT, label: 'Fiscal Performance', icon: TrendingUp },
+    { id: View.MARKETPLACE, label: 'Module Manager', icon: Grid3X3 },
     { id: View.COMPARISON, label: 'Market Comparison', icon: ArrowLeftRight },
     { id: View.SCHEDULING, label: 'Deployment Center', icon: CalendarDays },
     { id: View.OPERATIONS, label: 'Operational Hub', icon: Activity },
     { id: View.INVENTORY, label: 'Asset Management', icon: Package },
-    { id: View.ANALYTICS, label: 'Legacy Reports', icon: BarChart3 },
     { id: View.TEAM, label: 'Personnel Registry', icon: Users },
     { id: View.PLAYBOOK, label: 'Sentinel Policy', icon: ShieldCheck },
   ];
