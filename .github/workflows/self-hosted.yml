@@ -25,3 +25,11 @@ jobs:
           uname -a || true
           node --version || true
           npm --version || true
+jobs:
+  self_hosted:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Confirm runner
+        run: echo "Self-hosted runner is active."
