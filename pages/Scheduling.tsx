@@ -292,7 +292,7 @@ const Scheduling: React.FC<SchedulingProps> = ({
                                 <div className="space-y-2">
                                   {terminalLogs.map((log, i) => (
                                     <div key={i} className="animate-in fade-in slide-in-from-bottom-1 duration-200 truncate flex gap-3">
-                                      <span className="opacity-30">BZ>></span> {log}
+                                      <span className="opacity-30">{'BZ>>'}</span> {log}
                                     </div>
                                   ))}
                                   <div ref={logEndRef} />
