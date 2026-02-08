@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LayoutDashboard, CalendarDays, Activity, Package, BarChart3, Users, Settings as SettingsIcon, LogOut, ShieldCheck, ArrowLeftRight, Grid3X3, TrendingUp, Coins } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Activity, Package, BarChart3, Users, Settings as SettingsIcon, LogOut, ShieldCheck, ArrowLeftRight, Grid3X3, TrendingUp, Coins, Star } from 'lucide-react';
 import { View } from '../types';
 import { APP_VERSION } from '../constants';
 
@@ -15,6 +15,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, onLogout
     { id: View.DASHBOARD, label: 'Strategic Command', icon: LayoutDashboard },
     { id: View.ROYALTY_DASHBOARD, label: 'Royalty Node', icon: Coins },
     { id: View.METRICS_REPORT, label: 'Fiscal Performance', icon: TrendingUp },
+    { id: View.STORE_RATINGS, label: 'Store Ratings', icon: Star },
     { id: View.MARKETPLACE, label: 'Module Manager', icon: Grid3X3 },
     { id: View.COMPARISON, label: 'Market Comparison', icon: ArrowLeftRight },
     { id: View.SCHEDULING, label: 'Deployment Center', icon: CalendarDays },

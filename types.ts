@@ -11,7 +11,8 @@ export enum View {
   COMPARISON = 'COMPARISON',
   MARKETPLACE = 'MARKETPLACE',
   METRICS_REPORT = 'METRICS_REPORT',
-  ROYALTY_DASHBOARD = 'ROYALTY_DASHBOARD'
+  ROYALTY_DASHBOARD = 'ROYALTY_DASHBOARD',
+  STORE_RATINGS = 'STORE_RATINGS'
 }
 
 export type PluginCategory = 'CRM' | 'ERP' | 'Jurisdiction' | 'AI_Agent' | 'Vision' | 'Cloud';

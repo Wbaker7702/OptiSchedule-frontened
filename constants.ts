@@ -7,6 +7,27 @@ export const COMPARISON_STORE = "2080";
 export const APP_VERSION = "v4.1.0-Azure-Cloud";
 export const CURRENT_STATE = "MI";
 
+export interface StoreRatingData {
+  id: string;
+  location: string;
+  state: string;
+  overallScore: number;
+  customerExperience: number;
+  operationalEfficiency: number;
+  laborCompliance: number;
+  fiscalROI: number;
+  safetyScore: number;
+  lastAudit: string;
+}
+
+export const MOCK_STORES: StoreRatingData[] = [
+  { id: "5065", location: "Kalamazoo", state: "MI", overallScore: 92, customerExperience: 88, operationalEfficiency: 94, laborCompliance: 98, fiscalROI: 85, safetyScore: 95, lastAudit: "2024-05-15" },
+  { id: "2080", location: "Detroit", state: "MI", overallScore: 84, customerExperience: 82, operationalEfficiency: 79, laborCompliance: 91, fiscalROI: 76, safetyScore: 89, lastAudit: "2024-04-20" },
+  { id: "1010", location: "Columbus", state: "OH", overallScore: 78, customerExperience: 75, operationalEfficiency: 72, laborCompliance: 85, fiscalROI: 68, safetyScore: 82, lastAudit: "2024-05-01" },
+  { id: "3030", location: "Chicago", state: "IL", overallScore: 95, customerExperience: 92, operationalEfficiency: 96, laborCompliance: 99, fiscalROI: 91, safetyScore: 97, lastAudit: "2024-05-18" },
+  { id: "4040", location: "Indianapolis", state: "IN", overallScore: 81, customerExperience: 79, operationalEfficiency: 83, laborCompliance: 88, fiscalROI: 74, safetyScore: 85, lastAudit: "2024-03-12" },
+];
+
 export const ROYALTY_METRICS = {
   baselineLaborSalesPct: 25.0,
   currentLaborSalesPct: 21.8,
