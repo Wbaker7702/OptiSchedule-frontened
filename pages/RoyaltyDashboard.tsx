@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Coins, Zap, Activity, Clock, ShieldCheck, TrendingUp, DollarSign, ArrowUpRight, CheckCircle2, Loader2, Landmark, History, Server, Database, Cloud, Shield, CalendarDays, Info } from 'lucide-react';
+import { Coins, Zap, Activity, Clock, ShieldCheck, TrendingUp, DollarSign, ArrowUpRight, CheckCircle2, Loader2, Landmark, History, Server, Database, Cloud, Shield, CalendarDays, Info, Terminal, Radio, Link as LinkIcon, RefreshCcw, Search, ShieldAlert, Cpu, HeartPulse, CheckCircle } from 'lucide-react';
 import { ROYALTY_METRICS, STORE_NUMBER, CURRENT_STATE, LABOR_REGULATIONS } from '../constants';
 
 const efficiencyTrend = [
@@ -24,18 +24,89 @@ const RoyaltyDashboard: React.FC = () => {
   const [handshakeStep, setHandshakeStep] = useState('');
   const [showAmortizationDetails, setShowAmortizationDetails] = useState(false);
   
+  // New Live Health Metrics
+  const [currentLaborCost, setCurrentLaborCost] = useState(18.2);
+  const [currentEfficiency, setCurrentEfficiency] = useState(91.8);
+
+  // Initiative Linking States
+  const [laborIssueId, setLaborIssueId] = useState('LAB-5065-COST');
+  const [inventoryIssueId, setInventoryIssueId] = useState('INV-5065-HUB');
+  const [isTriggeringSentinel, setIsTriggeringSentinel] = useState(false);
+  const [sentinelLogs, setSentinelLogs] = useState<{id: string, text: string, status: 'info' | 'success' | 'warn'}[]>([]);
+
+  // Ledger Sync States
+  const [ledgerSyncProgress, setLedgerSyncProgress] = useState(12.4);
+  const [syncLogs, setSyncLogs] = useState<{id: string, log: string}[]>([]);
+  
   const reg = LABOR_REGULATIONS[CURRENT_STATE];
 
-  // Simulation of live updates for "Watching your royalty grow"
+  // Simulation of live updates for Sales, Royalty, Health Metrics, and Ledger Sync
   useEffect(() => {
     const interval = setInterval(() => {
       setLiveSales(prev => prev + Math.floor(Math.random() * 200));
-      // Royalty is 15% of the efficiency gain. 
-      // Gain is roughly 3.2% of sales in our mock scenario.
       setAccruedRoyalty(prev => prev + (Math.random() * 0.85));
+      
+      // Fluctuate Health Metrics around targets
+      setCurrentLaborCost(prev => {
+        const delta = (Math.random() - 0.5) * 0.4;
+        return parseFloat((prev + delta).toFixed(1));
+      });
+      setCurrentEfficiency(prev => {
+        const delta = (Math.random() - 0.4) * 0.3; // Slight bias towards target
+        return parseFloat((prev + delta).toFixed(1));
+      });
+
+      // Advance Ledger Sync
+      setLedgerSyncProgress(prev => {
+        const next = prev + (Math.random() * 0.05);
+        return next > 100 ? 12.4 : next; 
+      });
+
+      // Update Sync Logs
+      const logMessages = [
+        "Reconciling Transaction Block #44A2",
+        "Azure Fabric Handshake Verified",
+        "HS Breeze Signal Delta Commit",
+        "D365 Ledger Entry Verified",
+        "Sentinel Integrity Check: Pass",
+        "Amortization Vector Aligned"
+      ];
+      const newLog = {
+        id: Math.random().toString(36),
+        log: logMessages[Math.floor(Math.random() * logMessages.length)]
+      };
+      setSyncLogs(prev => [newLog, ...prev].slice(0, 4));
+
     }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  const triggerSentinelRefresh = () => {
+    setIsTriggeringSentinel(true);
+    setSentinelLogs([]);
+    
+    const sequence = [
+      { text: `Pinging Initiative: ${laborIssueId}...`, status: 'info' },
+      { text: `Ping Successful. Status: [IN_PROGRESS] detected.`, status: 'success' },
+      { text: `Validating Data Stream for Labor Cost...`, status: 'info' },
+      { text: `Labor Stream Verified. Delta locked.`, status: 'success' },
+      { text: `Pinging Initiative: ${inventoryIssueId}...`, status: 'info' },
+      { text: `Ping Successful. Status: [IN_PROGRESS] detected.`, status: 'success' },
+      { text: `Validating Data Stream for Inventory Hub...`, status: 'info' },
+      { text: `Inventory Stream Verified. Handshake complete.`, status: 'success' },
+    ];
+
+    let current = 0;
+    const interval = setInterval(() => {
+      if (current < sequence.length) {
+        setSentinelLogs(prev => [...prev, { id: Date.now().toString(), ...sequence[current] }]);
+        current++;
+      } else {
+        clearInterval(interval);
+        setIsTriggeringSentinel(false);
+      }
+    }, 600);
+  };
 
   const handleRequestPayout = () => {
     setIsProcessing(true);
@@ -60,7 +131,6 @@ const RoyaltyDashboard: React.FC = () => {
         setPayoutSuccess(true);
         setHandshakeStep('');
         
-        // Reset success state after a while
         setTimeout(() => setPayoutSuccess(false), 5000);
       }
     }, 1000);
@@ -69,10 +139,57 @@ const RoyaltyDashboard: React.FC = () => {
   const efficiencyGainPct = (ROYALTY_METRICS.baselineLaborSalesPct - ROYALTY_METRICS.currentLaborSalesPct).toFixed(1);
 
   return (
-    <div className="flex-1 bg-slate-950 overflow-auto custom-scrollbar font-mono">
+    <div className="flex-1 bg-slate-950 overflow-auto custom-scrollbar font-mono text-slate-200">
       <Header title="Royalty Node Overview" subtitle={`Store #${STORE_NUMBER} • Creator Agreement Active`} />
 
       <div className="p-8 max-w-7xl mx-auto space-y-8 pb-24">
+        
+        {/* System Health Matrix Header */}
+        <div className="bg-slate-900/50 border border-emerald-500/20 rounded-3xl p-6 flex flex-wrap items-center justify-between gap-6 shadow-2xl backdrop-blur-sm">
+           <div className="flex items-center gap-4 border-r border-slate-800 pr-8">
+              <div className="relative">
+                 <HeartPulse className="w-8 h-8 text-emerald-500 animate-pulse" />
+                 <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full"></div>
+              </div>
+              <div>
+                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Global Node State</p>
+                 <h2 className="text-xl font-black text-emerald-500 uppercase tracking-tighter">System Status: Green</h2>
+              </div>
+           </div>
+
+           <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
+              <div className="flex items-center justify-between">
+                 <div>
+                    <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Labor Cost Matrix</p>
+                    <div className="flex items-baseline gap-2">
+                       <span className="text-lg font-black text-white">Target 18%</span>
+                       <span className="text-xs font-bold text-emerald-400">Current: {currentLaborCost}%</span>
+                    </div>
+                 </div>
+                 <div className="w-24 bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
+                    <div className="h-full bg-emerald-500 transition-all duration-1000" style={{ width: `${Math.min(100, (currentLaborCost/18)*100)}%` }}></div>
+                 </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                 <div>
+                    <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Efficiency Node</p>
+                    <div className="flex items-baseline gap-2">
+                       <span className="text-lg font-black text-white">Target 92%</span>
+                       <span className="text-xs font-bold text-blue-400">Current: {currentEfficiency}%</span>
+                    </div>
+                 </div>
+                 <div className="w-24 bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
+                    <div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${Math.min(100, (currentEfficiency/92)*100)}%` }}></div>
+                 </div>
+              </div>
+           </div>
+
+           <div className="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 hidden xl:flex items-center gap-3">
+              <ShieldCheck className="w-4 h-4 text-emerald-500" />
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Hardened Fiscal Frame</span>
+           </div>
+        </div>
         
         {/* Success Notification */}
         {payoutSuccess && (
@@ -120,7 +237,7 @@ const RoyaltyDashboard: React.FC = () => {
                        </div>
                     </div>
                     <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
-                       <div className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" style={{ width: `${(parseFloat(efficiencyGainPct)/10) * 100}%` }}></div>
+                       <div className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-1000" style={{ width: `${(parseFloat(efficiencyGainPct)/10) * 100}%` }}></div>
                     </div>
                     <p className="text-[9px] text-slate-500 leading-relaxed uppercase">
                        Sentinel AI successfully suppressed labor burn against the <span className="text-emerald-400 font-bold">{reg.state} Labor Frame Baseline</span>.
@@ -166,7 +283,7 @@ const RoyaltyDashboard: React.FC = () => {
               </div>
            </div>
 
-           {/* Widget 3: The "Back-Pay Amortization" Status */}
+           {/* Widget 3: The "Back-Pay Settlement" Status */}
            <div className={`bg-slate-900 rounded-3xl p-8 border shadow-2xl relative overflow-hidden group transition-all duration-700 ${ROYALTY_METRICS.backPayStatus === 'Settled' ? 'border-blue-500/30' : 'border-slate-800'}`}>
               <div className="absolute -right-8 -top-8 opacity-5 group-hover:scale-110 transition-transform duration-1000">
                  <CalendarDays className="w-48 h-48 text-white" />
@@ -196,7 +313,7 @@ const RoyaltyDashboard: React.FC = () => {
                     </p>
                  </div>
 
-                 {showAmortizationDetails && (
+                 {showAmortizationDetails ? (
                     <div className="mb-4 p-3 bg-slate-950 border border-slate-800 rounded-xl animate-in fade-in zoom-in-95 duration-200">
                        <div className="space-y-2">
                           <div className="flex justify-between items-center text-[8px] uppercase font-black">
@@ -211,6 +328,23 @@ const RoyaltyDashboard: React.FC = () => {
                              <span className="text-blue-400">Total Sales</span>
                              <span className="text-white">${(ROYALTY_METRICS.backPayPeriod.totalSales / 1000000).toFixed(2)}M</span>
                           </div>
+                       </div>
+                    </div>
+                 ) : (
+                    <div className="mb-4 p-3 bg-slate-950 border border-slate-800 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
+                       <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                             <Terminal className="w-3 h-3 text-blue-500" />
+                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Sync Log</span>
+                          </div>
+                          <span className="text-[7px] text-emerald-500 font-mono animate-pulse">{ledgerSyncProgress.toFixed(2)}% SYNC</span>
+                       </div>
+                       <div className="space-y-1 h-[40px] overflow-hidden">
+                          {syncLogs.map(log => (
+                             <div key={log.id} className="text-[7px] font-mono text-slate-400 uppercase tracking-tighter truncate opacity-70">
+                                > {log.log}
+                             </div>
+                          ))}
                        </div>
                     </div>
                  )}
@@ -239,7 +373,10 @@ const RoyaltyDashboard: React.FC = () => {
                        {ROYALTY_METRICS.backPayStatus === 'Settled' ? (
                           <div className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded text-[8px] font-black text-emerald-500 uppercase">Licensed Node</div>
                        ) : (
-                          <div className="px-2 py-1 bg-slate-800 border border-slate-700 rounded text-[8px] font-black text-slate-400 uppercase">Syncing Ledger</div>
+                          <div className="flex items-center gap-2 bg-slate-800 border border-slate-700 px-2 py-1 rounded text-[8px] font-black text-slate-400 uppercase group-hover:border-blue-500/30 transition-colors">
+                             <Radio className="w-3 h-3 text-blue-500 animate-pulse" />
+                             Syncing Ledger
+                          </div>
                        )}
                     </div>
                  </div>
@@ -248,33 +385,121 @@ const RoyaltyDashboard: React.FC = () => {
 
         </div>
 
-        {/* Real-time Gain Distribution Visualizer */}
-        <div className="bg-slate-900 rounded-3xl border border-slate-800 p-8 shadow-xl">
-           <div className="flex justify-between items-center mb-10">
-              <div>
-                 <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
-                    <Zap className="w-4 h-4 text-[#ff7a59] fill-[#ff7a59]" />
-                    Real-time Efficiency Velocity
-                 </h3>
-                 <p className="text-[10px] text-slate-500 font-mono mt-1 uppercase">Breeze Ingress Hourly Analysis</p>
+        {/* Strategic Initiative Handshake Card */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+           <div className="lg:col-span-5 bg-slate-900 rounded-3xl p-8 border border-blue-500/20 shadow-2xl relative overflow-hidden group h-full">
+              <div className="absolute -right-8 -top-8 opacity-5 group-hover:scale-110 transition-transform duration-1000">
+                 <Cpu className="w-64 h-64 text-blue-500" />
+              </div>
+              
+              <div className="relative z-10 flex flex-col h-full">
+                 <div className="flex items-center justify-between mb-8">
+                    <div>
+                       <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+                          <LinkIcon className="w-4 h-4 text-blue-400" />
+                          Initiative Handshake
+                       </h3>
+                       <p className="text-[10px] text-slate-500 font-mono mt-1 uppercase tracking-widest">Strategic Asset Integration</p>
+                    </div>
+                    <button 
+                      onClick={triggerSentinelRefresh}
+                      disabled={isTriggeringSentinel}
+                      className="p-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50"
+                    >
+                       {isTriggeringSentinel ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCcw className="w-4 h-4" />}
+                       <span className="text-[9px] font-black uppercase tracking-widest">Trigger Sentinel</span>
+                    </button>
+                 </div>
+
+                 <div className="space-y-4 mb-8">
+                    <div>
+                       <label className="block text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Labor Cost Issue ID</label>
+                       <div className="relative">
+                          <Terminal className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-blue-500/50" />
+                          <input 
+                            type="text" 
+                            value={laborIssueId}
+                            onChange={(e) => setLaborIssueId(e.target.value)}
+                            placeholder="Enter Labor ID..."
+                            className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-xs font-mono font-bold text-blue-400 focus:border-blue-500 outline-none transition-all placeholder:text-slate-800"
+                          />
+                       </div>
+                    </div>
+                    <div>
+                       <label className="block text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Inventory Hub Issue ID</label>
+                       <div className="relative">
+                          <Terminal className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-blue-500/50" />
+                          <input 
+                            type="text" 
+                            value={inventoryIssueId}
+                            onChange={(e) => setInventoryIssueId(e.target.value)}
+                            placeholder="Enter Inventory ID..."
+                            className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-xs font-mono font-bold text-blue-400 focus:border-blue-500 outline-none transition-all placeholder:text-slate-800"
+                          />
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="bg-slate-950 rounded-2xl border border-slate-800 p-5 flex-1 min-h-[160px] overflow-hidden flex flex-col">
+                    <div className="flex items-center justify-between mb-3 border-b border-slate-900 pb-2">
+                       <div className="flex items-center gap-2">
+                          <ShieldAlert className="w-3 h-3 text-blue-500" />
+                          <span className="text-[8px] font-black text-slate-600 uppercase">Sentinel Validation Stream</span>
+                       </div>
+                       <div className="flex items-center gap-1.5">
+                          <div className={`w-1.5 h-1.5 rounded-full ${isTriggeringSentinel ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+                          <span className="text-[7px] text-slate-600 uppercase font-mono">{isTriggeringSentinel ? 'Pinging' : 'Standby'}</span>
+                       </div>
+                    </div>
+                    
+                    <div className="space-y-1.5 overflow-y-auto custom-scrollbar flex-1 max-h-[120px]">
+                       {sentinelLogs.length === 0 ? (
+                         <div className="h-full flex items-center justify-center">
+                            <p className="text-[9px] text-slate-800 font-black uppercase tracking-[0.2em]">Awaiting Authorization</p>
+                         </div>
+                       ) : (
+                         sentinelLogs.map(log => (
+                            <div key={log.id} className="flex gap-2 animate-in slide-in-from-left-2 fade-in duration-300">
+                               <span className="text-slate-700 font-mono text-[8px] shrink-0">[{new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}]</span>
+                               <p className={`text-[8px] font-mono leading-tight ${log.status === 'success' ? 'text-emerald-500' : 'text-slate-400'}`}>
+                                  {log.text}
+                               </p>
+                            </div>
+                         ))
+                       )}
+                    </div>
+                 </div>
               </div>
            </div>
-           <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                 <AreaChart data={efficiencyTrend}>
-                    <defs>
-                       <linearGradient id="gainGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                       </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
-                    <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#64748b', fontWeight: 'bold'}} />
-                    <YAxis hide />
-                    <Tooltip contentStyle={{backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px'}} />
-                    <Area type="monotone" dataKey="gain" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#gainGradient)" name="Efficiency Delta (%)" />
-                 </AreaChart>
-              </ResponsiveContainer>
+
+           {/* Efficiency Trends Area (Occupies remaining space) */}
+           <div className="lg:col-span-7 bg-slate-900 rounded-3xl border border-slate-800 p-8 shadow-xl">
+              <div className="flex justify-between items-center mb-10">
+                 <div>
+                    <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+                       <Zap className="w-4 h-4 text-[#ff7a59] fill-[#ff7a59]" />
+                       Real-time Efficiency Velocity
+                    </h3>
+                    <p className="text-[10px] text-slate-500 font-mono mt-1 uppercase">Breeze Ingress Hourly Analysis</p>
+                 </div>
+              </div>
+              <div className="h-64">
+                 <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={efficiencyTrend}>
+                       <defs>
+                          <linearGradient id="gainGradient" x1="0" y1="0" x2="0" y2="1">
+                             <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                             <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                          </linearGradient>
+                       </defs>
+                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
+                       <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#64748b', fontWeight: 'bold'}} />
+                       <YAxis hide />
+                       <Tooltip contentStyle={{backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px'}} />
+                       <Area type="monotone" dataKey="gain" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#gainGradient)" name="Efficiency Delta (%)" />
+                    </AreaChart>
+                 </ResponsiveContainer>
+              </div>
            </div>
         </div>
 

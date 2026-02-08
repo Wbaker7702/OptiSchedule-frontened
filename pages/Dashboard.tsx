@@ -25,7 +25,9 @@ const Dashboard: React.FC<{ setCurrentView?: (view: View) => void }> = () => {
       "D365_INGRESS: ERP Handshake Secure",
       "BREEZE_SYNC: HubSpot Campaign Delta Processed",
       "SENTINEL: Edge Vision Latency 14ms",
-      "CLOUD_FABRIC: High Availability Mode Active"
+      "CLOUD_FABRIC: High Availability Mode Active",
+      "SECURE_NODE: Execution Leakage Audit - Clean",
+      "HARDENING: Q1 2026 Protocols Active"
     ];
     
     const interval = setInterval(() => {
@@ -45,6 +47,24 @@ const Dashboard: React.FC<{ setCurrentView?: (view: View) => void }> = () => {
       <Header title="Strategic Command" subtitle={`Node #5065 • Triple-Engine Integration Active`} />
       
       <div className="p-8 max-w-7xl mx-auto space-y-8 pb-24">
+
+        {/* Hardening Phase Banner */}
+        <div className="bg-slate-900 border-l-4 border-emerald-500 p-4 rounded-r-xl flex items-center justify-between shadow-2xl relative overflow-hidden">
+            <div className="absolute inset-0 bg-emerald-500/5 pointer-events-none animate-pulse"></div>
+            <div className="flex items-center gap-4 relative z-10">
+                <div className="p-2 bg-slate-950 rounded-lg border border-emerald-500/30">
+                    <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                </div>
+                <div>
+                    <h3 className="text-xs font-black text-white uppercase tracking-widest">Q1 2026 Hardening Phase Active</h3>
+                    <p className="text-[10px] text-emerald-400 font-mono">Sentinel Secure Node Integration • Linter v3.1 Deployed</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-2 relative z-10 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">
+                <Lock className="w-3 h-3 text-slate-400" />
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Infrastructure Hardened</span>
+            </div>
+        </div>
         
         {/* Triple Node Status Bar */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -75,26 +95,26 @@ const Dashboard: React.FC<{ setCurrentView?: (view: View) => void }> = () => {
            </div>
 
            {/* Dynamics 365 ERP Card */}
-           <div className="bg-slate-900 rounded-2xl p-6 border border-blue-600/30 shadow-2xl relative overflow-hidden group">
+           <div className="bg-slate-900 rounded-2xl p-6 border border-emerald-500/30 shadow-2xl relative overflow-hidden group">
               <div className="absolute -right-4 -top-4 opacity-5 group-hover:scale-110 transition-transform duration-700">
-                 <Database className="w-24 h-24 text-blue-500" />
+                 <Database className="w-24 h-24 text-emerald-500" />
               </div>
               <div className="flex items-center gap-4 mb-4">
-                 <div className="p-2 bg-blue-600/10 rounded-lg border border-blue-600/20">
-                    <Database className="w-5 h-5 text-blue-500" />
+                 <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                    <Lock className="w-5 h-5 text-emerald-500" />
                  </div>
                  <div>
                     <h3 className="text-[10px] font-black text-white uppercase tracking-widest">Dynamics 365 ERP</h3>
-                    <p className="text-xs font-mono text-blue-500 font-bold">Ledger v8.4 • Synced</p>
+                    <p className="text-xs font-mono text-emerald-500 font-bold">Secure Node • Encrypted</p>
                  </div>
               </div>
               <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                    <span className="text-slate-500">Fiscal ROI Target</span>
-                    <span className="text-emerald-500">{FISCAL_METRICS.currentROI}x</span>
+                    <span className="text-slate-500">Execution Leakage</span>
+                    <span className="text-emerald-500">Protected</span>
                  </div>
                  <div className="w-full bg-slate-900 h-1.5 rounded-full mt-2 overflow-hidden">
-                    <div className="bg-blue-600 h-full w-[78%]"></div>
+                    <div className="bg-emerald-500 h-full w-[98%] shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
                  </div>
               </div>
            </div>
@@ -189,7 +209,7 @@ const Dashboard: React.FC<{ setCurrentView?: (view: View) => void }> = () => {
                     Real-time Efficiency Velocity
                  </h3>
                  <div className="flex gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-[9px] text-slate-500 uppercase font-black tracking-widest">Breeze Stream Active</span>
                  </div>
               </div>

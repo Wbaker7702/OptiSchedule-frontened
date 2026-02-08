@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import { EMPLOYEES as INITIAL_EMPLOYEES, LABOR_REGULATIONS, CURRENT_STATE } from '../constants';
-import { Mail, MoreHorizontal, Star, ChevronLeft, ChevronRight, UserPlus, X, ShieldCheck, Loader2, CheckCircle, Clock, AlertTriangle, Shield } from 'lucide-react';
+import { Mail, MoreHorizontal, Star, ChevronLeft, ChevronRight, UserPlus, X, ShieldCheck, Loader2, CheckCircle, Clock, AlertTriangle, Shield, MapPin, Scale, Lock, Globe } from 'lucide-react';
 import { Employee } from '../types';
 
 const ITEMS_PER_PAGE = 8;
@@ -17,8 +17,9 @@ const Team: React.FC<TeamProps> = ({ onEmployeeAdded }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [activeState, setActiveState] = useState(CURRENT_STATE);
 
-  const reg = LABOR_REGULATIONS[CURRENT_STATE];
+  const reg = LABOR_REGULATIONS[activeState] || LABOR_REGULATIONS['MI'];
 
   // Form State
   const [formData, setFormData] = useState({
@@ -52,7 +53,7 @@ const Team: React.FC<TeamProps> = ({ onEmployeeAdded }) => {
         isMinor: ageNum < 18
       };
 
-      setEmployees(prev => [newEmployee, ...prev]);
+      setEmployees([newEmployee, ...employees]);
       setIsSubmitting(false);
       setIsModalOpen(false);
       setShowSuccess(true);
@@ -68,9 +69,29 @@ const Team: React.FC<TeamProps> = ({ onEmployeeAdded }) => {
   };
 
   const getJurisdictionStatus = (emp: Employee) => {
-    if (!emp.isMinor) return { label: 'Adult Standard', class: 'text-slate-400', icon: Shield };
-    if (emp.age < 16) return { label: `Minor (14-15) • Curfew ${reg.curfewMinor1415}`, class: 'text-orange-500 font-black', icon: AlertTriangle };
-    return { label: `Minor (16-17) • Curfew ${reg.curfewMinor1617}`, class: 'text-amber-500 font-black', icon: Clock };
+    if (!emp.isMinor) return { 
+        label: 'Adult Standard', 
+        class: 'text-slate-400', 
+        icon: Shield, 
+        breakPolicy: `30m / >${reg.mandatoryBreakThreshold}h`,
+        weeklyCap: '40h (Standard)' 
+    };
+    
+    if (emp.age < 16) return { 
+        label: `Minor (14-15) • Curfew ${reg.curfewMinor1415}`, 
+        class: 'text-orange-500 font-black', 
+        icon: AlertTriangle,
+        breakPolicy: 'Mandatory 30m / 5h',
+        weeklyCap: '18h (School) / 40h (Non-School)'
+    };
+    
+    return { 
+        label: `Minor (16-17) • Curfew ${reg.curfewMinor1617}`, 
+        class: 'text-amber-500 font-black', 
+        icon: Clock,
+        breakPolicy: 'Mandatory 30m / 5h',
+        weeklyCap: '24h (School) / 48h (Non-School)'
+    };
   };
 
   return (
@@ -148,7 +169,70 @@ const Team: React.FC<TeamProps> = ({ onEmployeeAdded }) => {
       )}
       
       <div className="p-8 max-w-7xl mx-auto space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        
+        {/* Jurisdictional Routing Node (White Space Architecture) */}
+        <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+           <div className="flex items-center gap-4">
+              <div className="p-3 bg-blue-600/10 border border-blue-500/20 rounded-xl">
+                 <Globe className="w-6 h-6 text-blue-500" />
+              </div>
+              <div>
+                 <h3 className="text-white font-black text-sm uppercase tracking-widest">Jurisdictional Routing Node</h3>
+                 <p className="text-[10px] text-slate-500 font-mono mt-1 uppercase tracking-widest">Select active labor frame for team management</p>
+              </div>
+           </div>
+           
+           <div className="flex items-center gap-2 bg-slate-950 p-2 rounded-xl border border-slate-800">
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/20 flex items-center gap-2">
+                 <MapPin className="w-3 h-3" /> Michigan (Active)
+              </button>
+              <div className="w-px h-6 bg-slate-800 mx-2"></div>
+              {['OH', 'IN', 'IL'].map(state => (
+                 <button key={state} disabled className="px-4 py-2 bg-transparent text-slate-600 border border-slate-800 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-900 transition-colors opacity-50 cursor-not-allowed group">
+                    <Lock className="w-3 h-3" /> {state}
+                 </button>
+              ))}
+           </div>
+        </div>
+
+        {/* Compliance Math Allocation Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+           <div className="bg-white p-5 rounded-xl border border-orange-100 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                 <AlertTriangle className="w-4 h-4 text-orange-500" />
+                 <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Minor (14-15) Logic</span>
+              </div>
+              <div className="space-y-1 font-mono text-[10px]">
+                 <div className="flex justify-between text-slate-600"><span className="font-bold">Shift Cap:</span> <span>{reg.maxShiftMinor1415} hrs</span></div>
+                 <div className="flex justify-between text-slate-600"><span className="font-bold">Curfew:</span> <span>{reg.curfewMinor1415}</span></div>
+                 <div className="flex justify-between text-slate-600"><span className="font-bold">Break:</span> <span>30m @ 5.0h</span></div>
+              </div>
+           </div>
+           <div className="bg-white p-5 rounded-xl border border-amber-100 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                 <Clock className="w-4 h-4 text-amber-500" />
+                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Minor (16-17) Logic</span>
+              </div>
+              <div className="space-y-1 font-mono text-[10px]">
+                 <div className="flex justify-between text-slate-600"><span className="font-bold">Shift Cap:</span> <span>{reg.maxShiftMinor1617} hrs</span></div>
+                 <div className="flex justify-between text-slate-600"><span className="font-bold">Curfew:</span> <span>{reg.curfewMinor1617}</span></div>
+                 <div className="flex justify-between text-slate-600"><span className="font-bold">Break:</span> <span>30m @ 5.0h</span></div>
+              </div>
+           </div>
+           <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                 <Shield className="w-4 h-4 text-slate-400" />
+                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Adult (18+) Logic</span>
+              </div>
+              <div className="space-y-1 font-mono text-[10px]">
+                 <div className="flex justify-between text-slate-600"><span className="font-bold">Shift Cap:</span> <span>{reg.maxShiftAdult} hrs</span></div>
+                 <div className="flex justify-between text-slate-600"><span className="font-bold">OT Trig:</span> <span>40.0 hrs</span></div>
+                 <div className="flex justify-between text-slate-600"><span className="font-bold">Break:</span> <span>As Needed</span></div>
+              </div>
+           </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8">
            <div>
              <h2 className="text-xl font-black text-gray-900 uppercase tracking-tighter">Jurisdictional Labor Roster</h2>
              <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-1">Watching {employees.length} vectors against {reg.state} P.A. 90</p>
@@ -167,6 +251,7 @@ const Team: React.FC<TeamProps> = ({ onEmployeeAdded }) => {
                   <th className="px-6 py-5">Zone</th>
                   <th className="px-6 py-5 text-center">Age</th>
                   <th className="px-6 py-5">Jurisdiction Guard ({reg.state})</th>
+                  <th className="px-6 py-5">Weekly Cap / Break</th>
                   <th className="px-6 py-5 text-right">Actions</th>
                 </tr>
               </thead>
@@ -204,6 +289,12 @@ const Team: React.FC<TeamProps> = ({ onEmployeeAdded }) => {
                            <StatusIcon className="w-3 h-3" />
                            {status.label}
                         </div>
+                      </td>
+                      <td className="px-6 py-4">
+                         <div className="text-[9px] font-mono text-slate-500">
+                            <div className="flex items-center gap-1.5 mb-1"><Scale className="w-3 h-3 text-slate-300" /> <span className="font-bold text-slate-700">{status.weeklyCap}</span></div>
+                            <div className="flex items-center gap-1.5"><Clock className="w-3 h-3 text-slate-300" /> <span className="text-slate-500">{status.breakPolicy}</span></div>
+                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
                          <button className="text-slate-400 hover:text-blue-600 transition-colors">

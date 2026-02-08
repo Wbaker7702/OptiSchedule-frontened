@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '../components/Header';
 import { FISCAL_METRICS, LABOR_REGULATIONS, CURRENT_STATE } from '../constants';
 import { 
@@ -17,11 +17,67 @@ import {
   Users, 
   Zap, 
   ChevronRight, 
-  BookOpen
+  BookOpen,
+  Loader2
 } from 'lucide-react';
 
 const Playbook: React.FC = () => {
   const reg = LABOR_REGULATIONS[CURRENT_STATE];
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadPolicy = () => {
+    setIsDownloading(true);
+    
+    setTimeout(() => {
+      try {
+        const timestamp = new Date().toLocaleString();
+        const content = `
+=========================================
+SENTINEL POLICY FRAME - ${reg.state.toUpperCase()}
+=========================================
+GENERATED: ${timestamp}
+JURISDICTION: ${reg.state}
+STATUS: ACTIVE & ENFORCED
+=========================================
+
+MINOR (UNDER 18) CONSTRAINTS:
+- Max Shift (16-17): ${reg.maxShiftMinor1617} Hours
+- Curfew (16-17): ${reg.curfewMinor1617}
+- Max Shift (14-15): ${reg.maxShiftMinor1415} Hours
+- Curfew (14-15): ${reg.curfewMinor1415}
+
+ADULT (18+) CONSTRAINTS:
+- Max Shift: ${reg.maxShiftAdult} Hours
+- OT Threshold: 40 Hours / Week
+- Min Recovery Gap: 8.0 Hours
+
+BREAK PROTOCOLS:
+- Threshold: ${reg.mandatoryBreakThreshold} Hours
+- Duration: ${reg.mandatoryBreakDuration} Minutes (Unpaid)
+
+SENTINEL LINTER OVERRIDE:
+[ENABLED] All schedules are automatically gated by 
+these parameters to ensure zero-breach compliance.
+
+(c) 2024 OptiSchedule Pro Enterprise Systems
+        `.trim();
+
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `Sentinel_Policy_${reg.state}_${Date.now()}.txt`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("Policy Download Failed:", err);
+      } finally {
+        setIsDownloading(false);
+      }
+    }, 1000);
+  };
 
   return (
     <div className="flex-1 bg-slate-950 overflow-auto custom-scrollbar">
@@ -131,10 +187,10 @@ const Playbook: React.FC = () => {
                     <p className="text-blue-400"># Michigan Youth Employment Standards Act (P.A. 90)</p>
                     <p className="text-slate-500 mt-2">def validate_minor_shift(minor_age, start_time, end_time, total_weekly_hours):</p>
                     <p className="text-slate-400 ml-4">if minor_age &lt; 16:</p>
-                    <p className="text-slate-300 ml-8">curfew = "19:00"</p>
+                    <p className="text-slate-300 ml-8">curfew = "19:00"  # 7:00 PM</p>
                     <p className="text-slate-300 ml-8">weekly_max = 18 if school_in_session else 40</p>
                     <p className="text-slate-400 ml-4">elif minor_age &lt; 18:</p>
-                    <p className="text-slate-300 ml-8">curfew = "22:30"</p>
+                    <p className="text-slate-300 ml-8">curfew = "22:30"  # 10:30 PM (Sun-Thu)</p>
                     <p className="text-slate-300 ml-8">weekly_max = 24 if school_in_session else 48</p>
                     <p className="text-slate-400 ml-4"># Check Break Logic</p>
                     <p className="text-slate-300 ml-4">if shift_duration &gt; 5.0 and not has_30m_break:</p>
@@ -185,13 +241,18 @@ const Playbook: React.FC = () => {
                    </div>
                 </div>
               </div>
-              <div className="mt-8 pt-6 border-t border-slate-800 flex items-center justify-between">
+              <div className="mt-8 pt-6 border-t border-slate-800 flex items-center justify-between mt-8">
                  <div className="flex items-center gap-2">
                     <Activity className="w-4 h-4 text-emerald-500 animate-pulse" />
                     <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Linter State: NOMINAL</span>
                  </div>
-                 <button className="text-[9px] font-black text-blue-400 uppercase tracking-widest hover:text-blue-300 transition-colors flex items-center gap-2">
-                    Download Policy Frame <ChevronRight className="w-3 h-3" />
+                 <button 
+                  onClick={handleDownloadPolicy}
+                  disabled={isDownloading}
+                  className="text-[9px] font-black text-blue-400 uppercase tracking-widest hover:text-blue-300 transition-colors flex items-center gap-2 disabled:opacity-50"
+                 >
+                    {isDownloading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ChevronRight className="w-3 h-3" />}
+                    Download Policy Frame
                  </button>
               </div>
            </div>

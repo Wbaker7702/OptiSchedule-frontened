@@ -185,8 +185,22 @@ const Settings: React.FC<SettingsProps> = ({ hubspotStatus, setHubspotStatus }) 
                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isHardened ? 'left-5' : 'left-1'}`} />
                         </button>
                      </div>
+                     
+                     {/* Sentinel Secure Node Integration */}
+                     <div className="p-4 bg-[#002050]/5 rounded-xl border border-[#002050]/10 mt-4">
+                        <div className="flex items-center justify-between mb-2">
+                           <div className="flex items-center gap-2">
+                              <ShieldCheck className="w-4 h-4 text-blue-600" />
+                              <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Sentinel Secure Node</span>
+                           </div>
+                           <span className="text-[9px] font-black text-white bg-blue-600 px-2 py-0.5 rounded uppercase tracking-wider">Active</span>
+                        </div>
+                        <p className="text-[10px] text-blue-800 leading-relaxed font-medium">
+                           Q1 2026 Hardening Phase active. All ingress traffic from Dynamics 365 is currently routed through an encrypted Azure service tunnel for zero-trust verification.
+                        </p>
+                     </div>
                   </div>
-                  <div className="bg-slate-950 rounded-2xl p-6 border border-slate-800 text-slate-300 font-mono text-[10px]">
+                  <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 text-slate-300 font-mono text-[10px]">
                      <div className="flex items-center gap-2 mb-4 text-blue-400">
                         <Activity className="w-3 h-3" />
                         <span className="uppercase font-black tracking-widest">Ingress Tunnel</span>

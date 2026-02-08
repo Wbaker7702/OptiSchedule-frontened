@@ -4,7 +4,8 @@ import { Employee, Product, HeatmapDataPoint, DepartmentMetric, IngressDataPoint
 export const CURRENT_USER = "Wesley Baker";
 export const STORE_NUMBER = "5065";
 export const COMPARISON_STORE = "2080";
-export const APP_VERSION = "v4.1.0-Azure-Cloud";
+export const APP_VERSION = "v4.2.0-Sentinel-Hardened"; // Q1 2026 Update
+export const SENTINEL_VERSION = "v3.1";
 export const CURRENT_STATE = "MI";
 
 export interface StoreRatingData {
@@ -184,6 +185,12 @@ export const DEPARTMENT_METRICS: DepartmentMetric[] = [
 
 export const INVENTORY_DATA: Product[] = [
   { id: '1', name: 'Mobile Comms Unit', sku: 'ELEC-001', category: 'Electronics', stock: 45, reorderPoint: 20, status: 'Good' },
+  { id: '2', name: 'Premium ANC Headphones', sku: 'AUD-550', category: 'Electronics', stock: 2, reorderPoint: 15, status: 'Critical' },
+  { id: '3', name: 'Organic Avocado Mesh', sku: 'GRO-102', category: 'Grocery', stock: 0, reorderPoint: 50, status: 'Critical' },
+  { id: '4', name: 'Winter Fleece Jacket', sku: 'APR-880', category: 'Apparel', stock: 12, reorderPoint: 30, status: 'Low' },
+  { id: '5', name: '4K OLED Display 55"', sku: 'TV-4K-55', category: 'Electronics', stock: 5, reorderPoint: 8, status: 'Low' },
+  { id: '6', name: 'Isotonic Energy Drink', sku: 'bev-ISO', category: 'Grocery', stock: 140, reorderPoint: 40, status: 'Good' },
+  { id: '7', name: 'Smart Home Hub v2', sku: 'IOT-HUB', category: 'Electronics', stock: 18, reorderPoint: 25, status: 'Low' },
 ];
 
 export const OPERATIONAL_AUDITS: AuditLog[] = [

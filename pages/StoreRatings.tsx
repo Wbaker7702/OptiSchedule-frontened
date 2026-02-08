@@ -2,11 +2,12 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import { MOCK_STORES, StoreRatingData } from '../constants';
-import { ChevronLeft, ChevronRight, Star, ShieldCheck, Activity, Users, Target, TrendingUp, BarChart3, MapPin, Search, Calendar, Award } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, ShieldCheck, Activity, Users, Target, TrendingUp, BarChart3, MapPin, Search, Calendar, Award, Loader2 } from 'lucide-react';
 
 const StoreRatings: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentStore = MOCK_STORES[currentIndex];
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % MOCK_STORES.length);
@@ -14,6 +15,57 @@ const StoreRatings: React.FC = () => {
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev - 1 + MOCK_STORES.length) % MOCK_STORES.length);
+  };
+
+  const handleDownloadAuditTrail = () => {
+    setIsDownloading(true);
+    
+    setTimeout(() => {
+      try {
+        const timestamp = new Date().toLocaleString();
+        const content = `
+=========================================
+SENTINEL NETWORK PERFORMANCE AUDIT
+=========================================
+NODE ID: #${currentStore.id}
+LOCATION: ${currentStore.location}, ${currentStore.state}
+TIMESTAMP: ${timestamp}
+OVERALL RATING: ${currentStore.overallScore}/100
+=========================================
+
+OPERATIONAL PERFORMANCE MATRIX:
+- Customer Experience: ${currentStore.customerExperience}%
+- Operational Efficiency: ${currentStore.operationalEfficiency}%
+- Labor Law Compliance: ${currentStore.laborCompliance}%
+- Fiscal ROI: ${currentStore.fiscalROI}%
+- Safety Score: ${currentStore.safetyScore}%
+
+AUDIT TRAIL:
+- Last Physical Audit: ${currentStore.lastAudit}
+- Sentinel Sync: Verified
+- Dynamics 365 Ledger: Reconciled
+- HubSpot Signal Integrity: 98.2%
+
+STATUS: NOMINAL
+-----------------------------------------
+(c) 2024 OptiSchedule Pro Enterprise Systems
+        `.trim();
+
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `Audit_Trail_Store_${currentStore.id}_${Date.now()}.txt`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("Audit Trail Download Failed:", err);
+      } finally {
+        setIsDownloading(false);
+      }
+    }, 1200);
   };
 
   const MetricBar = ({ label, value, icon: Icon, color }: { label: string, value: number, icon: any, color: string }) => (
@@ -171,7 +223,12 @@ const StoreRatings: React.FC = () => {
                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Store Data Synced</span>
                     </div>
-                    <button className="text-[9px] font-black text-blue-400 uppercase tracking-widest hover:text-white transition-colors border-b border-blue-400/20 pb-0.5">
+                    <button 
+                      onClick={handleDownloadAuditTrail}
+                      disabled={isDownloading}
+                      className="text-[9px] font-black text-blue-400 uppercase tracking-widest hover:text-white transition-colors border-b border-blue-400/20 pb-0.5 flex items-center gap-2 disabled:opacity-50"
+                    >
+                       {isDownloading && <Loader2 className="w-3 h-3 animate-spin" />}
                        Download Audit Trail
                     </button>
                  </div>

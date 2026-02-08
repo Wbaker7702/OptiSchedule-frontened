@@ -1,25 +1,79 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from '../components/Header';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart, Line } from 'recharts';
-import { Truck, Box, Clock, Activity, ArrowUpRight, ShieldCheck, MapPin, Package, AlertTriangle, CheckCircle2, Loader2, Zap, Database, Cloud, FileDown, Download } from 'lucide-react';
+import { Truck, Box, Clock, Activity, ArrowUpRight, ShieldCheck, MapPin, Package, AlertTriangle, CheckCircle2, Loader2, Zap, Database, Cloud, FileDown, Download, Brain, Sparkles, Command, MessageSquareText, Terminal, Cpu, Radio, Shield } from 'lucide-react';
 import { HOURLY_LOGISTICS, STORE_NUMBER } from '../constants';
+import { GoogleGenAI } from "@google/genai";
 
 const Logistics: React.FC = () => {
   const [activeDock, setActiveDock] = useState<number | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showExportSuccess, setShowExportSuccess] = useState(false);
+  
+  // Insight Engine State
+  const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
+  const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [insightStep, setInsightStep] = useState<string>('');
 
   const handleSync = () => {
     setIsSyncing(true);
     setTimeout(() => setIsSyncing(false), 2000);
   };
 
+  const generateInsights = async () => {
+    setIsGeneratingInsights(true);
+    setAiInsight(null);
+    
+    const steps = [
+      "Accessing Azure Data Lake...",
+      "Intercepting D365 Manifests...",
+      "Filtering Noise from HubSpot Breeze...",
+      "Processing Neural Heuristics...",
+      "Finalizing Strategy Directives..."
+    ];
+
+    let stepIdx = 0;
+    const stepInterval = setInterval(() => {
+        if (stepIdx < steps.length) {
+            setInsightStep(steps[stepIdx]);
+            stepIdx++;
+        }
+    }, 400);
+
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `Analyze the following logistics data for Store #5065 and provide 3 high-impact management directives in a narrative, "cyber-ops" terminal style.
+        
+        Logistics Data: ${JSON.stringify(HOURLY_LOGISTICS)}
+        Docks Context: Dock 1 (Occupied - Unloading), Dock 2 (Awaiting - FED-2201), Dock 4 (Occupied - Staging).
+        
+        Requirements:
+        1. Use a gritty, authoritative command-line tone.
+        2. Identify specific bottlenecks (e.g., the 85-unit outbound spike at 12 PM).
+        3. Recommend specific labor reallocations (e.g., moving staff from low-inbound morning hours to peak outbound windows).
+        4. Format the output with clear [DIRECTIVE], [OBSERVATION], and [STATUS] headers.
+        5. Keep the total word count under 120 words.`,
+      });
+
+      clearInterval(stepInterval);
+      setAiInsight(response.text || "Insight generation failed. Azure Handshake Timeout.");
+    } catch (error) {
+      clearInterval(stepInterval);
+      console.error("AI Insight Error:", error);
+      setAiInsight("CRITICAL ERROR: Sentinel Insight Node unreachable. Check Cloud Fabric credentials or regional connectivity.");
+    } finally {
+      setIsGeneratingInsights(false);
+      setInsightStep('');
+    }
+  };
+
   const handleExport = () => {
     setIsExporting(true);
     
-    // Simulate complex manifest compilation from D365 and HubSpot Breeze
     setTimeout(() => {
       try {
         const timestamp = new Date().toLocaleString();
@@ -99,6 +153,64 @@ RECONCILIATION:
 
       <div className="p-8 max-w-7xl mx-auto space-y-8 pb-24">
         
+        {/* Insight Engine Section */}
+        <div className="bg-slate-900 rounded-3xl p-8 border border-blue-500/30 shadow-2xl relative overflow-hidden group">
+           <div className="absolute -right-12 -top-12 opacity-5 group-hover:scale-110 transition-transform duration-1000">
+              <Brain className="w-64 h-64 text-blue-400" />
+           </div>
+           
+           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 relative z-10">
+              <div>
+                 <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+                    <Sparkles className="w-5 h-5 text-blue-400 animate-pulse" />
+                    Sentinel Insight Engine
+                 </h3>
+                 <p className="text-[10px] text-slate-500 font-mono mt-1 uppercase tracking-widest">Neural Logistics Analysis • Node #5065</p>
+              </div>
+              <button 
+                onClick={generateInsights}
+                disabled={isGeneratingInsights}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-600/20 transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
+              >
+                {isGeneratingInsights ? <Loader2 className="w-4 h-4 animate-spin" /> : <Command className="w-4 h-4" />}
+                {isGeneratingInsights ? "Neural Linking..." : "Generate Directives"}
+              </button>
+           </div>
+
+           <div className="bg-slate-950 rounded-2xl border border-slate-800 p-6 relative overflow-hidden min-h-[160px] flex items-center justify-center">
+              {/* Scanline Effect */}
+              <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.15)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] z-20 bg-[length:100%_2px,3px_100%]"></div>
+              
+              {isGeneratingInsights ? (
+                  <div className="text-center space-y-4 animate-pulse">
+                      <Cpu className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                      <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 font-mono">{insightStep}</p>
+                  </div>
+              ) : aiInsight ? (
+                 <div className="w-full animate-in fade-in slide-in-from-left-4 duration-500">
+                    <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-2">
+                       <div className="flex items-center gap-2">
+                          <Terminal className="w-3 h-3 text-blue-500" />
+                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Decrypted Strategy Stream</span>
+                       </div>
+                       <div className="flex items-center gap-1.5">
+                          <Radio className="w-2.5 h-2.5 text-emerald-500 animate-pulse" />
+                          <span className="text-[7px] text-emerald-500/70 font-black uppercase">Secure Link</span>
+                       </div>
+                    </div>
+                    <p className="text-[11px] text-blue-100 leading-relaxed whitespace-pre-line font-mono font-medium">
+                       {aiInsight}
+                    </p>
+                 </div>
+              ) : (
+                 <div className="text-center opacity-30 group-hover:opacity-50 transition-opacity">
+                    <Brain className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Awaiting Neural Authorization</p>
+                 </div>
+              )}
+           </div>
+        </div>
+
         {/* Real-time Hourly Volume Chart */}
         <div className="bg-slate-900 rounded-3xl p-8 border border-slate-800 shadow-2xl">
            <div className="flex justify-between items-center mb-10">
