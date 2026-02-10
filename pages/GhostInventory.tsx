@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from '../components/Header';
 import { 
   Ghost, 
@@ -21,7 +21,11 @@ import {
   History,
   AlertOctagon,
   Image as ImageIcon,
-  Loader2
+  Loader2,
+  Terminal,
+  Zap,
+  TrendingDown,
+  UserX
 } from 'lucide-react';
 import { STORE_NUMBER } from '../constants';
 
@@ -36,15 +40,24 @@ interface FrozenBin {
   status: 'Frozen' | 'Investigating' | 'Resolved';
 }
 
+interface LogEntry {
+  id: string;
+  time: string;
+  message: string;
+  type: 'info' | 'alert' | 'success' | 'system';
+}
+
 const GhostInventory: React.FC = () => {
-  const [accuracy, setAccuracy] = useState(78);
+  const [accuracy, setAccuracy] = useState(78.4);
   const [recoveryRate, setRecoveryRate] = useState(64);
   const [freezeTime, setFreezeTime] = useState(14); // minutes
+  const [laborWaste, setLaborWaste] = useState(42); // minutes lost
   const [activeTab, setActiveTab] = useState<'dashboard' | 'governance'>('dashboard');
   
   // Pilot Logic States
   const [twoStrikeActive, setTwoStrikeActive] = useState(true);
   const [neighborLogicActive, setNeighborLogicActive] = useState(true);
+  const [isSimulating, setIsSimulating] = useState(false);
   
   // Frozen Bins Data
   const [frozenBins, setFrozenBins] = useState<FrozenBin[]>([
@@ -53,32 +66,74 @@ const GhostInventory: React.FC = () => {
     { id: 'FB-103', location: 'Zone B-15-3', item: 'Smart Home Hub v2', sku: 'IOT-HUB', strikes: 2, reportedBy: ['M. Chen', 'C. Miller'], timestamp: '10:05 AM', status: 'Investigating' },
   ]);
 
+  const [logs, setLogs] = useState<LogEntry[]>([
+    { id: '1', time: '08:42:05', message: 'Bin Zone B-12-4 FROZEN (2 Strikes)', type: 'alert' },
+    { id: '2', time: '08:45:12', message: 'Zone Lead dispatched to Row 12', type: 'info' },
+    { id: '3', time: '09:15:00', message: 'Picker S. Jenkins marked TV-4K-55 SHORT', type: 'info' },
+  ]);
+
   const [selectedBin, setSelectedBin] = useState<FrozenBin | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [photoProof, setPhotoProof] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Simulate Live Metrics
+  // Simulate Live Metrics & Logs
   useEffect(() => {
     const interval = setInterval(() => {
-      setAccuracy(prev => Math.min(95, prev + (Math.random() * 0.1)));
-      setRecoveryRate(prev => Math.min(100, prev + (Math.random() * 0.2)));
-    }, 5000);
+      // Metric Drift
+      setAccuracy(prev => Math.min(99.9, Math.max(70, prev + (Math.random() - 0.4) * 0.1)));
+      setRecoveryRate(prev => Math.min(100, Math.max(50, prev + (Math.random() - 0.4) * 0.2)));
+      
+      // Labor Waste Accumulation if bins are frozen
+      const frozenCount = frozenBins.filter(b => b.status === 'Frozen').length;
+      if (frozenCount > 0) {
+         setLaborWaste(prev => prev + (frozenCount * 0.1));
+      }
+
+      // Random Event Injection
+      if (Math.random() > 0.8) {
+        const events = [
+           { msg: "Picker scan at Zone B-04 verified", type: 'system' },
+           { msg: "Neighbor Logic: Redirecting to Overflow Bin C-01", type: 'success' },
+           { msg: "Latency detected in Zone C scanner mesh", type: 'info' },
+           { msg: "Audit complete: Row 4 cleared", type: 'success' }
+        ];
+        const evt = events[Math.floor(Math.random() * events.length)];
+        addLog(evt.msg, evt.type as any);
+      }
+    }, 2500);
     return () => clearInterval(interval);
-  }, []);
+  }, [frozenBins]);
+
+  const addLog = (message: string, type: 'info' | 'alert' | 'success' | 'system') => {
+    const newLog = {
+      id: Date.now().toString(),
+      time: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      message,
+      type
+    };
+    setLogs(prev => [newLog, ...prev].slice(0, 50));
+  };
 
   const handleResolve = (resolution: 'Transfer' | 'QC' | 'Zero') => {
     if (!selectedBin) return;
     
-    // In a real app, this would verify photo for 'Zero'
     const updatedBin = { ...selectedBin, status: 'Resolved' as const };
     
     setFrozenBins(prev => prev.map(b => b.id === selectedBin.id ? updatedBin : b));
     setSelectedBin(null);
     setPhotoProof(null);
     
+    addLog(`Bin ${selectedBin.location} RESOLVED via ${resolution}`, 'success');
+    
     // Simulate Metric Impact
-    if (resolution === 'Transfer') setRecoveryRate(prev => Math.min(100, prev + 2));
-    if (resolution === 'Zero') setAccuracy(prev => Math.max(0, prev - 0.1));
+    if (resolution === 'Transfer') {
+       setRecoveryRate(prev => Math.min(100, prev + 2.5));
+       setLaborWaste(prev => Math.max(0, prev - 5)); // Saved time
+    }
+    if (resolution === 'Zero') {
+       setAccuracy(prev => Math.max(0, prev - 0.5)); // Accuracy hit
+    }
   };
 
   const simulatePhotoUpload = () => {
@@ -87,6 +142,39 @@ const GhostInventory: React.FC = () => {
       setIsUploading(false);
       setPhotoProof("https://images.unsplash.com/photo-1553413077-190dd305871c?w=400&h=300&fit=crop");
     }, 1500);
+  };
+
+  const triggerPeakFlow = () => {
+     setIsSimulating(true);
+     addLog("SIMULATION STARTED: Peak Flow Injection", 'alert');
+     
+     let steps = 0;
+     const simInterval = setInterval(() => {
+        steps++;
+        if (steps > 5) {
+           clearInterval(simInterval);
+           setIsSimulating(false);
+           addLog("SIMULATION ENDED: Normalizing data streams", 'system');
+           return;
+        }
+        
+        // Inject a new frozen bin
+        const newBin: FrozenBin = {
+           id: `FB-SIM-${Date.now()}`,
+           location: `Zone B-${10 + steps}-2`,
+           item: 'Simulated Asset',
+           sku: `SIM-${1000 + steps}`,
+           strikes: 2,
+           reportedBy: ['Auto-Sim', 'Sentinel'],
+           timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+           status: 'Frozen'
+        };
+        setFrozenBins(prev => [newBin, ...prev]);
+        addLog(`High Velocity Error: ${newBin.location} FROZEN`, 'alert');
+        setAccuracy(prev => prev - 0.2);
+        setLaborWaste(prev => prev + 2);
+
+     }, 1000);
   };
 
   return (
@@ -114,7 +202,7 @@ const GhostInventory: React.FC = () => {
         {activeTab === 'dashboard' ? (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
             {/* KPI Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl relative overflow-hidden">
                   <div className="flex justify-between items-start mb-4">
                      <div>
@@ -154,6 +242,21 @@ const GhostInventory: React.FC = () => {
                <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl relative overflow-hidden">
                   <div className="flex justify-between items-start mb-4">
                      <div>
+                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Wasted Labor</p>
+                        <h3 className="text-3xl font-black text-white mt-1">{Math.floor(laborWaste)}m</h3>
+                     </div>
+                     <div className="p-3 bg-red-500/10 rounded-xl border border-red-500/20">
+                        <UserX className="w-6 h-6 text-red-500" />
+                     </div>
+                  </div>
+                  <p className="text-[9px] text-red-400 mt-2 font-black uppercase flex items-center gap-2">
+                     <TrendingDown className="w-3 h-3" /> Inefficiency
+                  </p>
+               </div>
+
+               <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl relative overflow-hidden">
+                  <div className="flex justify-between items-start mb-4">
+                     <div>
                         <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Freeze Resolve Time</p>
                         <h3 className="text-3xl font-black text-white mt-1">{freezeTime}m</h3>
                      </div>
@@ -185,14 +288,14 @@ const GhostInventory: React.FC = () => {
                         </div>
                      </div>
                      <div className="flex items-center gap-3 relative z-10">
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 rounded-lg border border-slate-700">
-                           <Snowflake className="w-3 h-3 text-blue-400" />
-                           <span className="text-[9px] font-black text-white uppercase tracking-widest">Two-Strike: {twoStrikeActive ? 'ON' : 'OFF'}</span>
-                        </div>
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 rounded-lg border border-slate-700">
-                           <MapPin className="w-3 h-3 text-emerald-400" />
-                           <span className="text-[9px] font-black text-white uppercase tracking-widest">Neighbor Logic: {neighborLogicActive ? 'ON' : 'OFF'}</span>
-                        </div>
+                        <button 
+                           onClick={triggerPeakFlow}
+                           disabled={isSimulating}
+                           className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-600/20 flex items-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+                        >
+                           {isSimulating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
+                           Trigger Peak Flow
+                        </button>
                      </div>
                   </div>
 
@@ -262,35 +365,46 @@ const GhostInventory: React.FC = () => {
                   </div>
                </div>
 
-               {/* Remote Management Sidebar */}
+               {/* Live Intelligence Feed */}
                <div className="lg:col-span-4 space-y-6">
-                  {/* Smart Audit Schedule */}
-                  <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
+                  <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl h-full flex flex-col">
                      <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <Scan className="w-4 h-4 text-emerald-500" /> Smart-Priority Audit
+                        <Terminal className="w-4 h-4 text-emerald-500" /> Sentinel Event Stream
                      </h3>
-                     <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-4">
-                        <div className="flex justify-between items-center">
-                           <span className="text-[9px] text-slate-500 uppercase font-black">Next Window</span>
-                           <span className="text-xs text-white font-black">08:00 - 10:30 AM</span>
+                     <div className="bg-slate-950 rounded-xl border border-slate-800 p-4 flex-1 overflow-hidden flex flex-col">
+                        <div className="space-y-3 overflow-y-auto custom-scrollbar flex-1 pr-2" ref={scrollRef}>
+                           {logs.map((log) => (
+                              <div key={log.id} className="flex gap-3 animate-in slide-in-from-left-2 fade-in duration-300">
+                                 <span className="text-[9px] font-mono text-slate-600 shrink-0 mt-0.5">[{log.time}]</span>
+                                 <p className={`text-[10px] font-mono leading-tight ${
+                                    log.type === 'alert' ? 'text-red-400' :
+                                    log.type === 'success' ? 'text-emerald-400' :
+                                    log.type === 'system' ? 'text-blue-400' : 'text-slate-300'
+                                 }`}>
+                                    {log.message}
+                                 </p>
+                              </div>
+                           ))}
                         </div>
-                        <div className="flex justify-between items-center">
-                           <span className="text-[9px] text-slate-500 uppercase font-black">Focus Aisle</span>
-                           <span className="text-xs text-orange-400 font-black">Row 12 (Heatmap High)</span>
+                     </div>
+                     
+                     <div className="mt-4 pt-4 border-t border-slate-800">
+                        <div className="flex items-center justify-between text-[9px] font-black uppercase text-slate-500">
+                           <span>Scan Velocity</span>
+                           <span className="text-white">142/hr</span>
                         </div>
-                        <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden border border-slate-800 mt-2">
-                           <div className="h-full bg-emerald-500 w-[65%]"></div>
+                        <div className="w-full bg-slate-950 h-1 mt-2 rounded-full overflow-hidden">
+                           <div className="h-full bg-blue-500 animate-pulse w-[60%]"></div>
                         </div>
-                        <p className="text-[8px] text-emerald-500 text-center font-mono uppercase tracking-widest">Audit Cycle In Progress</p>
                      </div>
                   </div>
 
                   {/* Photo Messaging Feed */}
-                  <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl h-full min-h-[300px] flex flex-col">
+                  <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
                      <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
                         <Camera className="w-4 h-4 text-indigo-500" /> Direct Photo-Messaging
                      </h3>
-                     <div className="flex-1 space-y-3 mb-4 overflow-y-auto max-h-[250px] custom-scrollbar pr-2">
+                     <div className="space-y-3 mb-4">
                         <div className="flex gap-3">
                            <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-[9px] text-white font-black shrink-0">ZL</div>
                            <div className="bg-slate-800 p-2 rounded-lg rounded-tl-none border border-slate-700">
@@ -302,15 +416,9 @@ const GhostInventory: React.FC = () => {
                            </div>
                         </div>
                      </div>
-                     <div className="pt-3 border-t border-slate-800">
-                         <div className="flex items-center justify-between text-[9px] text-slate-500 uppercase font-black mb-2">
-                            <span>Daily Tool Debrief</span>
-                            <span className="text-white">10:30 AM</span>
-                         </div>
-                         <button className="w-full py-2 bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600/20 transition-all flex items-center justify-center gap-2">
-                            <MessageSquare className="w-3 h-3" /> Connect to Zone Lead
-                         </button>
-                     </div>
+                     <button className="w-full py-2 bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600/20 transition-all flex items-center justify-center gap-2">
+                        <MessageSquare className="w-3 h-3" /> Connect to Zone Lead
+                     </button>
                   </div>
                </div>
             </div>

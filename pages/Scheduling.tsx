@@ -1,10 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Header from '../components/Header';
-// Fixed: Added Scale to the lucide-react import
-import { Calendar, RefreshCw, Link as LinkIcon, Check, X, ShieldCheck, Settings, Database, Users as UsersIcon, List, ArrowLeftRight, Activity, Globe, Server, Layers, Hexagon, AlertTriangle, ArrowRight, Share2, Loader2, FileText, Terminal, Zap, Sparkles, Fingerprint, Search, Shield, Info, UserCircle, Clock, Scale } from 'lucide-react';
+import { Calendar, RefreshCw, Link as LinkIcon, Check, X, ShieldCheck, Settings, Database, Users as UsersIcon, List, ArrowLeftRight, Activity, Globe, Server, Layers, Hexagon, AlertTriangle, ArrowRight, Share2, Loader2, FileText, Terminal, Zap, Sparkles, Fingerprint, Search, Shield, Info, UserCircle, Clock, Scale, Brain, XCircle, CheckCircle, TrendingUp, AlertOctagon, Truck, Lock, MessageSquare, Megaphone, UserMinus, Construction } from 'lucide-react';
 import { View, ERPProvider, IntegrationStatus, HeatmapDataPoint } from '../types';
-import { EMPLOYEES, LABOR_REGULATIONS, CURRENT_STATE } from '../constants';
+import { EMPLOYEES, LABOR_REGULATIONS, CURRENT_STATE, HEATMAP_DATA } from '../constants';
 
 interface SchedulingProps {
   setCurrentView?: (view: View) => void;
@@ -31,12 +30,33 @@ const Scheduling: React.FC<SchedulingProps> = ({
 }) => {
   const [selectedProvider, setSelectedProvider] = useState<ERPProvider>('HubSpot'); 
   const [isModalOpen, setIsModalOpen] = useState(!isConnected);
-  const [isSyncing, setIsSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState<'heatmap' | 'logs'>('heatmap');
   const [syncProgress, setSyncProgress] = useState(0);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const logEndRef = useRef<HTMLDivElement>(null);
+
+  // Finite Scheduling State
+  const [localHeatmap, setLocalHeatmap] = useState<HeatmapDataPoint[]>(heatmapData);
+  const [optimizing, setOptimizing] = useState(false);
+  const [optimizationStep, setOptimizationStep] = useState('');
+  const [activeDisruption, setActiveDisruption] = useState<{id: string, type: 'callout' | 'surge', title: string, desc: string} | null>(null);
+  const [laborBudgetUsage, setLaborBudgetUsage] = useState(84); // %
+  const [efficiencyScore, setEfficiencyScore] = useState(78); // %
+  const [lastOptimized, setLastOptimized] = useState<string | null>(null);
+
+  // Constraint & Knowledge Bridge State
+  const [customRule, setCustomRule] = useState('');
+  const [activeRule, setActiveRule] = useState<string | null>(null);
+  const [conflictLogs, setConflictLogs] = useState<{id: string, msg: string, type: 'alert' | 'success'}[]>([]);
+  const [isInjectingRule, setIsInjectingRule] = useState(false);
+  
+  // Backend Constraints Mock Status
+  const [constraintStatus, setConstraintStatus] = useState({
+      transport: 'Pending' as 'Pending' | 'Checking' | 'Enforced',
+      separation: 'Pending' as 'Pending' | 'Checking' | 'Enforced',
+      laborLaw: 'Pending' as 'Pending' | 'Checking' | 'Enforced'
+  });
 
   const reg = LABOR_REGULATIONS[CURRENT_STATE];
 
@@ -62,9 +82,97 @@ const Scheduling: React.FC<SchedulingProps> = ({
     }, 600);
   };
 
+  const handleRunFiniteOptimization = () => {
+    setOptimizing(true);
+    setConflictLogs([]); // Clear previous logs
+    setConstraintStatus({ transport: 'Checking', separation: 'Checking', laborLaw: 'Checking' });
+    
+    const steps = [
+      "Ingesting Forecast Data (HubSpot Breeze)...",
+      "Checking Hard Constraints (Transport Cap)...",
+      "Verifying Personnel Separation Protocols...",
+      activeRule ? "Applying 'Rule of the Week' Override..." : "Standard Heuristics...",
+      "Resolving Overtime Conflicts...",
+      "Optimizing for Peak Efficiency..."
+    ];
+    
+    let step = 0;
+    const interval = setInterval(() => {
+      if (step < steps.length) {
+        setOptimizationStep(steps[step]);
+        step++;
+        
+        // Visual updates for constraints
+        if (step === 2) setConstraintStatus(prev => ({ ...prev, transport: 'Enforced' }));
+        if (step === 3) setConstraintStatus(prev => ({ ...prev, separation: 'Enforced' }));
+        if (step === 4) setConstraintStatus(prev => ({ ...prev, laborLaw: 'Enforced' }));
+
+      } else {
+        clearInterval(interval);
+        setOptimizing(false);
+        setEfficiencyScore(96);
+        setLaborBudgetUsage(98); 
+        setLastOptimized(new Date().toLocaleTimeString());
+        
+        // Generate Conflict Alerts based on the "Hard Constraints"
+        const newLogs = [
+            { id: '1', msg: "Conflict Resolved: Tuesday Roster capped at 298/300 to preserve Transport Capacity limit.", type: 'alert' as const },
+            { id: '2', msg: "Protocol Enforced: Smith & Jones shifts separated by 4 hours per HR directive.", type: 'success' as const },
+            { id: '3', msg: `Jurisdiction Guard: Zero minor curfew violations detected (${reg.state} P.A. 90).`, type: 'success' as const }
+        ];
+        
+        if (activeRule) {
+            newLogs.push({ id: '4', msg: `Human Bridge Override: "${activeRule}" successfully prioritized in logic stack.`, type: 'success' as const });
+        }
+
+        setConflictLogs(newLogs);
+        
+        // Update heatmap to show "perfect" alignment (Simulated)
+        setLocalHeatmap(prev => prev.map(p => ({
+            ...p,
+            staffing: Math.ceil(p.transactionVolume / 12), 
+            efficiency: 98
+        })));
+      }
+    }, 800);
+  };
+
+  const handleInjectRule = (e: React.FormEvent) => {
+      e.preventDefault();
+      if(!customRule) return;
+      setIsInjectingRule(true);
+      setTimeout(() => {
+          setActiveRule(customRule);
+          setCustomRule('');
+          setIsInjectingRule(false);
+      }, 1000);
+  };
+
+  const simulateDisruption = (type: 'callout' | 'surge') => {
+    if (type === 'callout') {
+        setActiveDisruption({
+            id: 'd-01',
+            type: 'callout',
+            title: 'Unexpected Absence',
+            desc: 'Staff Member: James Wilson (Stock Assoc). Shift: 2 PM - 10 PM.'
+        });
+        setEfficiencyScore(65);
+        setLocalHeatmap(prev => prev.map(p => p.hour === '2 PM' || p.hour === '4 PM' ? {...p, staffing: Math.max(1, p.staffing - 1), efficiency: 55} : p));
+    } else {
+        setActiveDisruption({
+            id: 'd-02',
+            type: 'surge',
+            title: 'Demand Spike Detected',
+            desc: 'Breeze Signal: +45% Foot Traffic predicted at 4 PM due to local event.'
+        });
+        setEfficiencyScore(72);
+        setLocalHeatmap(prev => prev.map(p => p.hour === '4 PM' ? {...p, transactionVolume: Math.floor(p.transactionVolume * 1.45), efficiency: 60} : p));
+    }
+  };
+
   return (
     <div className="flex-1 bg-gray-50 overflow-auto relative text-gray-900 custom-scrollbar">
-      <Header title="Deployment Center" subtitle={`Scheduling Node Store #5065 • ${reg.state} Jurisdiction`} />
+      <Header title="Deployment Center" subtitle={`Scheduling Node Store #5065 • ${reg.state} Jurisdiction • Finite Logic Active`} />
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4 backdrop-blur-md">
@@ -96,7 +204,7 @@ const Scheduling: React.FC<SchedulingProps> = ({
                         </>
                     ) : (
                         <div className="space-y-6">
-                            <div className="bg-slate-950 rounded-2xl p-6 font-mono text-[10px] text-orange-400 h-40 overflow-hidden text-left border border-orange-500/20 shadow-inner">
+                            <div className="bg-slate-900 rounded-2xl p-6 font-mono text-[10px] text-orange-400 h-40 overflow-hidden text-left border border-orange-500/20 shadow-inner">
                                 {terminalLogs.map((log, i) => (
                                     <div key={i} className="animate-in fade-in slide-in-from-bottom-1 truncate">
                                         <span className="opacity-30">BZ>></span> {log}
@@ -114,107 +222,263 @@ const Scheduling: React.FC<SchedulingProps> = ({
         </div>
       )}
 
-      <div className="p-8 max-w-7xl mx-auto space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-3 space-y-6">
-                <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center border border-emerald-500/20">
-                            <ShieldCheck className="w-10 h-10 text-emerald-500" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Compliance Guard: {reg.state}</h3>
-                            <p className="text-xs text-slate-500 font-mono font-black uppercase tracking-widest flex items-center gap-2 mt-1">
-                                <Clock className="w-3 h-3 text-orange-400" /> Curfew: {reg.curfewMinor1617} (Minor 16-17)
-                            </p>
-                        </div>
-                    </div>
-                    <div className="bg-slate-50 px-6 py-4 rounded-2xl border border-slate-100 text-center">
-                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1">Minor Break Protocol</p>
-                        <p className="text-sm font-black text-slate-900 font-mono">{reg.mandatoryBreakDuration}m every {reg.mandatoryBreakThreshold}h</p>
-                    </div>
-                </div>
+      <div className="p-8 max-w-7xl mx-auto space-y-8 pb-24">
+        
+        {/* Top Control Panel */}
+        <div className="bg-slate-900 rounded-3xl p-8 border border-slate-800 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+           <div className="absolute top-0 left-0 p-8 opacity-5">
+              <Brain className="w-64 h-64 text-white" />
+           </div>
+           
+           <div className="relative z-10 flex items-center gap-6">
+              <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/30">
+                 {optimizing ? <Loader2 className="w-8 h-8 text-white animate-spin" /> : <Layers className="w-8 h-8 text-white" />}
+              </div>
+              <div>
+                 <h2 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-3">
+                    AI-Finite Schedule Logic
+                    {activeDisruption && <span className="px-2 py-0.5 bg-red-500 text-white text-[9px] rounded animate-pulse">Action Required</span>}
+                 </h2>
+                 <p className="text-xs text-blue-200 font-mono mt-1 uppercase tracking-widest">
+                    {optimizing ? optimizationStep : lastOptimized ? `Optimization Secure • Last Run: ${lastOptimized}` : "Ready to align labor vectors"}
+                 </p>
+              </div>
+           </div>
 
-                <div className="bg-slate-950 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden relative">
-                    <div className="p-8 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-                       <div>
-                           <h2 className="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
-                             <Layers className="w-5 h-5 text-[#ff7a59]" />
-                             Predictive Capacity Model
-                           </h2>
-                           <p className="text-[10px] text-slate-500 font-mono mt-1 uppercase tracking-widest">Powered by Breeze Intelligence Node</p>
-                       </div>
+           <div className="relative z-10 flex gap-6 text-center">
+              <div>
+                 <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest mb-1">Labor Budget</p>
+                 <p className={`text-2xl font-black ${laborBudgetUsage > 100 ? 'text-red-500' : 'text-white'}`}>{laborBudgetUsage}%</p>
+              </div>
+              <div className="w-px bg-slate-800"></div>
+              <div>
+                 <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest mb-1">Efficiency</p>
+                 <p className={`text-2xl font-black ${efficiencyScore < 70 ? 'text-orange-500' : 'text-emerald-500'}`}>{efficiencyScore}%</p>
+              </div>
+           </div>
+
+           <button 
+             onClick={handleRunFiniteOptimization}
+             disabled={optimizing}
+             className={`relative z-10 px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl transition-all flex items-center gap-3 active:scale-95 ${
+                optimizing 
+                ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700' 
+                : activeDisruption ? 'bg-red-600 text-white animate-pulse' : 'bg-white text-slate-900 hover:bg-slate-100'
+             }`}
+           >
+              {optimizing ? (
+                 <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Calculating...
+                 </>
+              ) : (
+                 <>
+                    <Zap className="w-4 h-4 fill-current" />
+                    {activeDisruption ? 'Resolve Conflict' : 'Auto-Optimize'}
+                 </>
+              )}
+           </button>
+        </div>
+
+        {/* Hard Constraints & Human Knowledge Bridge */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            {/* Hard Constraint Engine */}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                <div className="p-6 border-b border-gray-100 bg-slate-50 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Shield className="w-5 h-5 text-slate-600" />
+                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Hard Constraint Engine</h3>
                     </div>
-                    <div className="p-8 overflow-x-auto">
-                        <div className="min-w-[800px] grid grid-cols-[160px_repeat(8,1fr)]">
-                            <div className="flex flex-col justify-center space-y-16 text-slate-500 font-black text-[10px] uppercase tracking-widest pr-6 border-r border-slate-800">
-                                <div className="h-24 flex items-center justify-end">Projected Traffic</div>
-                                <div className="h-24 flex items-center justify-end">Staff Goal</div>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Backend Logic</span>
+                </div>
+                <div className="p-6 space-y-4 flex-1">
+                    {/* Constraint 1: Transport Cap */}
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <div className="flex items-center gap-4">
+                            <Truck className="w-5 h-5 text-slate-500" />
+                            <div>
+                                <p className="text-xs font-bold text-gray-900">Transport Capacity Protocol</p>
+                                <p className="text-[10px] text-gray-500 font-medium">Limit: 300 Personnel (Tuesday)</p>
                             </div>
-                            {heatmapData.map((point, index) => (
-                                <div key={index} className="flex flex-col relative group">
-                                    <div className="h-10 border-b border-slate-800 flex items-center justify-center text-slate-500 text-[10px] font-mono">{point.hour}</div>
-                                    <div className="h-24 bg-blue-500/10 border-r border-slate-800/50 flex items-center justify-center text-white font-black text-xl">
-                                        {point.transactionVolume}
-                                    </div>
-                                    <div className="h-24 bg-slate-900 border-r border-slate-800/50 flex items-center justify-center text-slate-400 font-black text-xl">
-                                        {point.staffing}
-                                    </div>
-                                    {/* Compliance Warning for Minors after 10 PM */}
-                                    {point.hour === '10 PM' && (
-                                        <div className="absolute inset-0 bg-orange-500/10 border-2 border-orange-500/40 pointer-events-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <span className="bg-orange-500 text-white text-[8px] font-black uppercase px-2 py-1 rounded">Minor Curfew</span>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                        </div>
+                        <div className={`px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest flex items-center gap-2 ${
+                            constraintStatus.transport === 'Enforced' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'
+                        }`}>
+                            {constraintStatus.transport === 'Enforced' ? <CheckCircle className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                            {constraintStatus.transport}
+                        </div>
+                    </div>
+
+                    {/* Constraint 2: Personnel Separation */}
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <div className="flex items-center gap-4">
+                            <UserMinus className="w-5 h-5 text-slate-500" />
+                            <div>
+                                <p className="text-xs font-bold text-gray-900">Personnel Separation</p>
+                                <p className="text-[10px] text-gray-500 font-medium">Rule: Smith != Jones (Same Shift)</p>
+                            </div>
+                        </div>
+                        <div className={`px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest flex items-center gap-2 ${
+                            constraintStatus.separation === 'Enforced' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'
+                        }`}>
+                            {constraintStatus.separation === 'Enforced' ? <CheckCircle className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                            {constraintStatus.separation}
+                        </div>
+                    </div>
+
+                    {/* Constraint 3: Labor Laws */}
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <div className="flex items-center gap-4">
+                            <Scale className="w-5 h-5 text-slate-500" />
+                            <div>
+                                <p className="text-xs font-bold text-gray-900">Jurisdiction Compliance</p>
+                                <p className="text-[10px] text-gray-500 font-medium">State: {reg.state} (P.A. 90)</p>
+                            </div>
+                        </div>
+                        <div className={`px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest flex items-center gap-2 ${
+                            constraintStatus.laborLaw === 'Enforced' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'
+                        }`}>
+                            {constraintStatus.laborLaw === 'Enforced' ? <CheckCircle className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                            {constraintStatus.laborLaw}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="space-y-6">
-                <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-6">
-                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <UsersIcon className="w-4 h-4 text-blue-600" />
-                        Staffing Roster ({reg.state})
-                    </h3>
-                    <div className="space-y-3">
-                        {EMPLOYEES.map((emp) => (
-                            <div key={emp.id} className="p-3 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3 hover:border-blue-500/20 transition-all cursor-pointer group">
-                                <div className="relative">
-                                    <img src={emp.avatar} alt={emp.name} className="w-8 h-8 rounded-full border border-white shadow-sm" />
-                                    {emp.isMinor && <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full border border-white flex items-center justify-center text-[6px] font-black text-white">M</div>}
-                                </div>
-                                <div className="flex-1 overflow-hidden">
-                                    <p className="text-[10px] font-black text-slate-900 uppercase truncate">{emp.name}</p>
-                                    <p className="text-[8px] text-slate-500 font-mono uppercase truncate">{emp.role} {emp.isMinor ? `(Age ${emp.age})` : ''}</p>
-                                </div>
-                                <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest transition-colors ${emp.isMinor ? 'bg-orange-500/10 text-orange-600' : 'bg-blue-500/10 text-blue-600'}`}>
-                                    {emp.isMinor ? 'Guard' : 'Deploy'}
-                                </div>
-                            </div>
-                        ))}
+            {/* Human Knowledge Bridge */}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                <div className="p-6 border-b border-gray-100 bg-indigo-50/50 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Brain className="w-5 h-5 text-indigo-600" />
+                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Human Knowledge Bridge</h3>
                     </div>
+                    <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Manager Override</span>
                 </div>
-
-                <div className="bg-[#1c120f] rounded-3xl shadow-2xl border border-[#ff7a59]/20 p-8 flex flex-col relative overflow-hidden h-fit">
-                    <div className="absolute top-0 right-0 p-6 opacity-10">
-                        <Scale className="w-32 h-32 text-[#ff7a59]" />
-                    </div>
-                    <div className="relative z-10 space-y-6">
-                        <h3 className="text-lg font-black text-white uppercase tracking-tighter">Compliance Node</h3>
-                        <div className="p-4 bg-slate-900/50 rounded-xl border border-white/5">
-                            <p className="text-[10px] text-slate-400 font-mono mb-2 uppercase tracking-widest">White Space: Ohio Rollout</p>
-                            <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden opacity-20">
-                                <div className="bg-slate-600 h-full w-[0%]"></div>
+                
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                    {activeRule ? (
+                        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 mb-4 animate-in fade-in slide-in-from-bottom-2">
+                            <div className="flex items-start justify-between mb-2">
+                                <h4 className="text-xs font-black text-indigo-900 uppercase tracking-widest flex items-center gap-2">
+                                    <Zap className="w-3 h-3 text-indigo-500" /> Active Rule
+                                </h4>
+                                <button onClick={() => setActiveRule(null)} className="text-[9px] font-bold text-slate-400 hover:text-red-500 transition-colors">REMOVE</button>
                             </div>
-                            <p className="text-[8px] text-slate-600 font-mono mt-1 uppercase">Region OH Module: Locked</p>
+                            <p className="text-sm font-medium text-indigo-800">"{activeRule}"</p>
+                            <p className="text-[10px] text-indigo-400 mt-2 font-mono uppercase">Injected into logic stack</p>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="mb-4">
+                            <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+                                Enter a <span className="font-bold text-slate-700">"Rule of the Week"</span> to guide the AI. This injects human context into the optimization vector (e.g., "No overtime for Maintenance Team A this month").
+                            </p>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleInjectRule} className="relative">
+                        <input 
+                            type="text" 
+                            disabled={!!activeRule}
+                            value={customRule}
+                            onChange={(e) => setCustomRule(e.target.value)}
+                            placeholder={activeRule ? "Rule active..." : "Type rule here..."}
+                            className="w-full bg-white border border-gray-200 rounded-xl py-4 pl-4 pr-32 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none disabled:bg-gray-50 disabled:text-gray-400"
+                        />
+                        <button 
+                            type="submit"
+                            disabled={!customRule || isInjectingRule || !!activeRule}
+                            className="absolute right-2 top-2 bottom-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                            {isInjectingRule ? <Loader2 className="w-3 h-3 animate-spin" /> : <Construction className="w-3 h-3" />}
+                            Inject
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
+
+        {/* Conflict Alert System (Conditional Display) */}
+        {conflictLogs.length > 0 && (
+            <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-xl animate-in fade-in slide-in-from-top-4">
+                <div className="p-4 border-b border-slate-800 bg-slate-950 flex items-center gap-2">
+                    <AlertOctagon className="w-4 h-4 text-orange-500" />
+                    <h3 className="text-xs font-black text-white uppercase tracking-[0.2em]">Conflict Resolution Logic</h3>
+                </div>
+                <div className="p-6 space-y-3">
+                    {conflictLogs.map((log) => (
+                        <div key={log.id} className={`flex items-start gap-3 p-3 rounded-lg border ${
+                            log.type === 'alert' ? 'bg-orange-500/10 border-orange-500/20' : 'bg-emerald-500/10 border-emerald-500/20'
+                        }`}>
+                            {log.type === 'alert' ? <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5" /> : <CheckCircle className="w-4 h-4 text-emerald-500 mt-0.5" />}
+                            <p className={`text-xs font-mono font-medium ${
+                                log.type === 'alert' ? 'text-orange-200' : 'text-emerald-200'
+                            }`}>{log.msg}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        {/* Heatmap Section */}
+        <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm">
+           <div className="flex justify-between items-center mb-8">
+              <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest flex items-center gap-3">
+                 <Activity className="w-5 h-5 text-blue-600" />
+                 Optimized Labor Heatmap
+              </h3>
+              <div className="flex gap-2">
+                 <button onClick={() => simulateDisruption('callout')} className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-100 rounded-lg text-[9px] font-black uppercase hover:bg-red-100 transition-colors">Simulate Call-out</button>
+                 <button onClick={() => simulateDisruption('surge')} className="px-3 py-1.5 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg text-[9px] font-black uppercase hover:bg-orange-100 transition-colors">Simulate Surge</button>
+              </div>
+           </div>
+
+           <div className="overflow-x-auto">
+              <div className="grid grid-cols-5 gap-4 min-w-[800px]">
+                 {localHeatmap.map((point, i) => (
+                    <div key={i} className="bg-gray-50 rounded-xl p-4 border border-gray-100 relative group hover:shadow-md transition-all">
+                       <div className="flex justify-between items-center mb-3">
+                          <span className="text-xs font-bold text-gray-500">{point.hour}</span>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded ${
+                             point.efficiency < 70 ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600'
+                          }`}>{point.efficiency}% Eff</span>
+                       </div>
+                       
+                       <div className="space-y-3">
+                          <div>
+                             <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase mb-1">
+                                <span>Traffic</span>
+                                <span>{point.transactionVolume}</span>
+                             </div>
+                             <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                <div className="h-full bg-blue-500" style={{ width: `${Math.min(100, (point.transactionVolume/200)*100)}%` }}></div>
+                             </div>
+                          </div>
+                          <div>
+                             <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase mb-1">
+                                <span>Staffing</span>
+                                <span className={point.staffing < 5 ? 'text-red-500' : 'text-gray-600'}>{point.staffing} Active</span>
+                             </div>
+                             <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                <div className="h-full bg-slate-600" style={{ width: `${Math.min(100, (point.staffing/20)*100)}%` }}></div>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+                 ))}
+              </div>
+           </div>
+        </div>
+
+        <div className="flex justify-end pt-8">
+           <button 
+             onClick={onFinalize}
+             className="px-8 py-4 bg-[#002050] hover:bg-slate-800 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-xl transition-all flex items-center gap-3 active:scale-95"
+           >
+              Finalize & Publish Schedule <ArrowRight className="w-4 h-4" />
+           </button>
+        </div>
+
       </div>
     </div>
   );

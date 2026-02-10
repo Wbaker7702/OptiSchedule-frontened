@@ -49,6 +49,7 @@ const Operations: React.FC<OperationsProps> = ({ defaultTab = 'metrics', externa
   const [vulnerabilities, setVulnerabilities] = useState<Vulnerability[]>(INITIAL_VULNERABILITIES);
   const [isLive, setIsLive] = useState(true);
   const [linterLogs, setLinterLogs] = useState<LinterLog[]>([
+    { id: '0', timestamp: '08:00:00', code: 'AUDIT_GEN', message: 'Weekly Audit Log Generated - Access: IT / AJ Hoka', status: 'Pass' },
     { id: '1', timestamp: '09:00:01', code: 'SYS_INIT', message: `Sentinel Core ${SENTINEL_VERSION} Handshake Successful`, status: 'Pass' },
     { id: '2', timestamp: '09:05:22', code: 'POL_VALID', message: 'Front End Staffing Adheres to Policy Frame', status: 'Pass' },
     { id: '3', timestamp: '09:12:45', code: 'VULN_DET', message: 'Minor Labor Leakage Detected in Zone C', status: 'Warn', fixAction: 'Optimize' }

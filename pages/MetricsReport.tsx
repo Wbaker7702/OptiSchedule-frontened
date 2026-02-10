@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, LineChart, Line } from 'recharts';
-import { DollarSign, Clock, Target, TrendingUp, ArrowUpRight, ArrowDownRight, Zap, Cloud, Database, ShieldCheck, Filter, Download, ListChecks, Loader2, CheckCircle, FileText, Calendar, BarChart3, PieChart, Activity, RefreshCw, Layers, ChevronRight, FileDown } from 'lucide-react';
+import { DollarSign, Clock, Target, TrendingUp, ArrowUpRight, ArrowDownRight, Zap, Cloud, Database, ShieldCheck, Filter, Download, ListChecks, Loader2, CheckCircle, FileText, Calendar, BarChart3, PieChart, Activity, RefreshCw, Layers, ChevronRight, FileDown, ShieldAlert } from 'lucide-react';
 import { FISCAL_METRICS, AZURE_TELEMETRY, ROYALTY_METRICS } from '../constants';
 
 const otTrendData = [
@@ -37,6 +37,7 @@ const REPORT_TEMPLATES: ReportTemplate[] = [
   { id: 'overtime', name: 'OT Vector Report', description: 'Identify employees approaching 40h threshold.', icon: Zap, category: 'Compliance' },
   { id: 'labor_pct', name: 'Labor vs Sales Ratio', description: 'Real-time efficiency gain vs baseline targets.', icon: BarChart3, category: 'Financial' },
   { id: 'efficiency', name: 'Efficiency Gain Summary', description: 'Recaptured fiscal value from Sentinel optimization.', icon: TrendingUp, category: 'Financial' },
+  { id: 'weekly_audit', name: 'Weekly Audit Log (IT/AJ Hoka)', description: 'Full system trace and security events.', icon: ShieldAlert, category: 'Compliance' },
 ];
 
 const MetricsReport: React.FC = () => {
