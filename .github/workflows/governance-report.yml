@@ -1,0 +1,26 @@
+name: Governance Report
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Report
+        run: |
+          echo "OptiSchedule Pro Governance Report" > GOVERNANCE_REPORT.txt
+          echo "Release: ${{ github.ref_name }}" >> GOVERNANCE_REPORT.txt
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: governance-report
+          path: GOVERNANCE_REPORT.txt
