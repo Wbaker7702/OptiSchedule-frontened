@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import { Calendar, RefreshCw, Link as LinkIcon, Check, X, ShieldCheck, Settings, Database, Users as UsersIcon, List, ArrowLeftRight, Activity, Globe, Server, Layers, Hexagon, AlertTriangle, ArrowRight, Share2, Loader2, FileText, Terminal, Zap, Sparkles, Fingerprint, Search, Shield, Info, UserCircle, Clock, Scale, Brain, XCircle, CheckCircle, TrendingUp, AlertOctagon, Truck, Lock, MessageSquare, Megaphone, UserMinus, Construction } from 'lucide-react';
 import { View, ERPProvider, IntegrationStatus, HeatmapDataPoint } from '../types';
 import { EMPLOYEES, LABOR_REGULATIONS, CURRENT_STATE, HEATMAP_DATA } from '../constants';
+import { GoogleGenAI, Type } from "@google/genai";
 
 interface SchedulingProps {
   setCurrentView?: (view: View) => void;
@@ -82,59 +83,108 @@ const Scheduling: React.FC<SchedulingProps> = ({
     }, 600);
   };
 
-  const handleRunFiniteOptimization = () => {
+  const handleRunFiniteOptimization = async () => {
     setOptimizing(true);
     setConflictLogs([]); // Clear previous logs
     setConstraintStatus({ transport: 'Checking', separation: 'Checking', laborLaw: 'Checking' });
     
-    const steps = [
-      "Ingesting Forecast Data (HubSpot Breeze)...",
-      "Checking Hard Constraints (Transport Cap)...",
-      "Verifying Personnel Separation Protocols...",
-      activeRule ? "Applying 'Rule of the Week' Override..." : "Standard Heuristics...",
-      "Resolving Overtime Conflicts...",
-      "Optimizing for Peak Efficiency..."
-    ];
-    
-    let step = 0;
-    const interval = setInterval(() => {
-      if (step < steps.length) {
-        setOptimizationStep(steps[step]);
-        step++;
-        
-        // Visual updates for constraints
-        if (step === 2) setConstraintStatus(prev => ({ ...prev, transport: 'Enforced' }));
-        if (step === 3) setConstraintStatus(prev => ({ ...prev, separation: 'Enforced' }));
-        if (step === 4) setConstraintStatus(prev => ({ ...prev, laborLaw: 'Enforced' }));
+    // Simulate initial checks for UI feedback
+    setOptimizationStep("Ingesting Forecast Data (HubSpot Breeze)...");
+    await new Promise(r => setTimeout(r, 600));
 
-      } else {
-        clearInterval(interval);
+    setOptimizationStep("Checking Hard Constraints (Transport Cap)...");
+    setConstraintStatus(prev => ({ ...prev, transport: 'Enforced' }));
+    await new Promise(r => setTimeout(r, 600));
+
+    setOptimizationStep("Verifying Personnel Separation Protocols...");
+    setConstraintStatus(prev => ({ ...prev, separation: 'Enforced' }));
+    await new Promise(r => setTimeout(r, 600));
+
+    setOptimizationStep(activeRule ? "Applying 'Rule of the Week' Override..." : "Standard Heuristics...");
+    setConstraintStatus(prev => ({ ...prev, laborLaw: 'Enforced' }));
+
+    setOptimizationStep("Optimizing for Peak Efficiency via Gemini...");
+
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+        
+        const prompt = `
+            Act as a Retail Scheduling Optimization Engine for Walmart Store #5065 in ${reg.state}.
+            
+            Current Constraints:
+            1. Transport Cap: 300 Personnel.
+            2. Personnel Separation: Smith != Jones.
+            3. Labor Laws: ${reg.state} P.A. 90 (Minor Curfews).
+            
+            Active Manager Override Rule: "${activeRule || 'None'}".
+            
+            Task:
+            Generate 3-4 short, technical "Conflict Resolution Logic" log messages that explain how the schedule was optimized. 
+            One log MUST explicitly reference the Active Rule if it exists.
+            
+            Return ONLY a JSON array of objects with 'msg' (string) and 'type' (string: 'alert' or 'success').
+        `;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-flash-preview',
+            contents: prompt,
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.OBJECT,
+                        properties: {
+                            msg: { type: Type.STRING },
+                            type: { type: Type.STRING, enum: ['alert', 'success'] }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Robust JSON parsing: sometimes models wrap JSON in markdown blocks despite config
+        let cleanText = response.text || '[]';
+        cleanText = cleanText.replace(/```json/g, '').replace(/```/g, '').trim();
+        
+        const generatedLogs = JSON.parse(cleanText);
+        const formattedLogs = generatedLogs.map((l: any, i: number) => ({
+            id: `gen-${i}`,
+            msg: l.msg,
+            type: l.type
+        }));
+
+        setConflictLogs(formattedLogs.length > 0 ? formattedLogs : [
+            { id: '1', msg: "Conflict Resolved: Tuesday Roster capped at 298/300 to preserve Transport Capacity limit.", type: 'alert' },
+            { id: '2', msg: "Protocol Enforced: Smith & Jones shifts separated by 4 hours per HR directive.", type: 'success' },
+            { id: '3', msg: `Jurisdiction Guard: Zero minor curfew violations detected (${reg.state} P.A. 90).`, type: 'success' }
+        ]);
+
+    } catch (error) {
+        console.error("Generative Optimization Failed:", error);
+        // Fallback logs if API fails
+        const fallbackLogs = [
+            { id: '1', msg: "Conflict Resolved: Tuesday Roster capped at 298/300 to preserve Transport Capacity limit.", type: 'alert' as const },
+            { id: '2', msg: "Protocol Enforced: Smith & Jones shifts separated by 4 hours per HR directive.", type: 'success' as const },
+            { id: '3', msg: `Jurisdiction Guard: Zero minor curfew violations detected (${reg.state} P.A. 90).`, type: 'success' as const }
+        ];
+        if (activeRule) {
+            fallbackLogs.push({ id: '4', msg: `Human Bridge Override: "${activeRule}" successfully prioritized in logic stack.`, type: 'success' as const });
+        }
+        setConflictLogs(fallbackLogs);
+    } finally {
         setOptimizing(false);
         setEfficiencyScore(96);
         setLaborBudgetUsage(98); 
         setLastOptimized(new Date().toLocaleTimeString());
         
-        // Generate Conflict Alerts based on the "Hard Constraints"
-        const newLogs = [
-            { id: '1', msg: "Conflict Resolved: Tuesday Roster capped at 298/300 to preserve Transport Capacity limit.", type: 'alert' as const },
-            { id: '2', msg: "Protocol Enforced: Smith & Jones shifts separated by 4 hours per HR directive.", type: 'success' as const },
-            { id: '3', msg: `Jurisdiction Guard: Zero minor curfew violations detected (${reg.state} P.A. 90).`, type: 'success' as const }
-        ];
-        
-        if (activeRule) {
-            newLogs.push({ id: '4', msg: `Human Bridge Override: "${activeRule}" successfully prioritized in logic stack.`, type: 'success' as const });
-        }
-
-        setConflictLogs(newLogs);
-        
-        // Update heatmap to show "perfect" alignment (Simulated)
+        // Update heatmap to show "perfect" alignment (Simulated effect of optimization)
         setLocalHeatmap(prev => prev.map(p => ({
             ...p,
             staffing: Math.ceil(p.transactionVolume / 12), 
             efficiency: 98
         })));
-      }
-    }, 800);
+    }
   };
 
   const handleInjectRule = (e: React.FormEvent) => {

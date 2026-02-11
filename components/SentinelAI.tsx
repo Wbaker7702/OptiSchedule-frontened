@@ -57,6 +57,10 @@ const SentinelAI: React.FC<SentinelAIProps> = ({ hubspotStatus }) => {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
             const chat = ai.chats.create({
                 model: 'gemini-3-flash-preview',
+                history: messages.map(m => ({
+                    role: m.role === 'ai' ? 'model' : 'user',
+                    parts: [{ text: m.content }],
+                })),
                 config: {
                     systemInstruction: `You are Sentinel AI, the central orchestration agent for Walmart Store #5065. 
                     Current Architecture: Triple-Engine Stack.
@@ -73,9 +77,9 @@ const SentinelAI: React.FC<SentinelAIProps> = ({ hubspotStatus }) => {
                 },
             });
 
-            let fullResponse = "";
-            const result = await chat.sendMessageStream({ message: input });
+            const result = await chat.sendMessageStream({ message: userMessage.content });
             
+            let fullResponse = "";
             setMessages(prev => [...prev, { 
                 role: 'ai', 
                 content: '', 
@@ -84,12 +88,14 @@ const SentinelAI: React.FC<SentinelAIProps> = ({ hubspotStatus }) => {
 
             for await (const chunk of result) {
                 const text = chunk.text;
-                fullResponse += text;
-                setMessages(prev => {
-                    const newMessages = [...prev];
-                    newMessages[newMessages.length - 1].content = fullResponse;
-                    return newMessages;
-                });
+                if (text) {
+                    fullResponse += text;
+                    setMessages(prev => {
+                        const newMessages = [...prev];
+                        newMessages[newMessages.length - 1].content = fullResponse;
+                        return newMessages;
+                    });
+                }
             }
         } catch (error) {
             console.error("Sentinel Sync Error:", error);
@@ -154,56 +160,58 @@ const SentinelAI: React.FC<SentinelAIProps> = ({ hubspotStatus }) => {
                                             : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-none'
                                     }`}>
                                         {msg.role === 'ai' && (
-                                            <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-700">
-                                                <Cpu className="w-3 h-3 text-blue-400" />
-                                                <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Response Matrix</span>
+                                            <div className="flex items-center gap-2 mb-1.5 text-[9px] font-black uppercase tracking-widest text-slate-500">
+                                                <Terminal className="w-3 h-3" /> Sentinel Node
                                             </div>
                                         )}
-                                        <div className="markdown-body">
-                                            {msg.content || <Loader2 className="w-3 h-3 animate-spin" />}
-                                        </div>
-                                        <p className="text-[8px] mt-2 opacity-40 font-mono text-right">{msg.timestamp}</p>
+                                        <div className="whitespace-pre-wrap">{msg.content}</div>
                                     </div>
                                 </div>
                             ))}
+                            {isLoading && (
+                                <div className="flex justify-start">
+                                    <div className="bg-slate-800 p-3 rounded-2xl rounded-tl-none border border-slate-700">
+                                        <div className="flex items-center gap-2">
+                                            <Loader2 className="w-3 h-3 text-blue-500 animate-spin" />
+                                            <span className="text-[10px] text-slate-400 font-mono animate-pulse">Computing Response...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                             <div ref={messagesEndRef} />
                         </div>
 
-                        {/* Engine Sockets Indicators */}
-                        <div className="px-4 py-2 border-t border-slate-800 bg-slate-900/50 flex gap-4">
-                            <div className="flex items-center gap-1.5">
-                                <Cloud className="w-3 h-3 text-[#0078d4]" />
-                                <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter">Azure</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <Zap className="w-3 h-3 text-[#ff7a59] fill-[#ff7a59]" />
-                                <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter">Breeze</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <Database className="w-3 h-3 text-blue-500" />
-                                <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter">D365</span>
-                            </div>
-                        </div>
-
                         {/* Input Area */}
-                        <form onSubmit={handleSendMessage} className="p-4 bg-slate-900 border-t border-slate-800">
-                            <div className="relative">
-                                <input 
-                                    type="text" 
+                        <div className="p-4 bg-slate-900 border-t border-slate-800">
+                            <form onSubmit={handleSendMessage} className="relative">
+                                <input
+                                    type="text"
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
-                                    placeholder="QUERY COMMAND CENTER..."
-                                    className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 pl-4 pr-12 text-xs text-blue-400 font-mono focus:border-blue-500 outline-none transition-all placeholder:text-slate-700 uppercase"
-                                />
-                                <button 
-                                    type="submit"
+                                    placeholder="Enter operational command..."
+                                    className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-mono placeholder:text-slate-600"
                                     disabled={isLoading}
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-all disabled:opacity-50"
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={!input.trim() || isLoading}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors"
                                 >
-                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                    <Send className="w-3.5 h-3.5" />
                                 </button>
+                            </form>
+                            <div className="flex justify-center mt-2 gap-3">
+                                <div className="flex items-center gap-1 text-[8px] text-slate-600 uppercase font-bold">
+                                    <Cloud className="w-2.5 h-2.5" /> Azure
+                                </div>
+                                <div className="flex items-center gap-1 text-[8px] text-slate-600 uppercase font-bold">
+                                    <Zap className="w-2.5 h-2.5" /> Breeze
+                                </div>
+                                <div className="flex items-center gap-1 text-[8px] text-slate-600 uppercase font-bold">
+                                    <Database className="w-2.5 h-2.5" /> D365
+                                </div>
                             </div>
-                        </form>
+                        </div>
                     </>
                 )}
             </div>
