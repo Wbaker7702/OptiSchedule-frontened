@@ -54,3 +54,30 @@ With a professional background that includes **Assistant Management at McDonald'
 2. Upload your current labor schedule via CSV.
 3. Hit **"Optimize"** to trigger the compliance audit.
 4. Download your corrected, optimized schedule.
+
+
+
+
+## 🤝 How to Contribute
+
+I believe that the best tools are built through collaboration and shared expertise. Whether you are a developer, a retail manager, or a compliance expert, your input is welcome!
+
+### 1. Reporting Bugs
+If you find a glitch—especially in the compliance logic—please open an issue. Provide details on:
+* What happened (e.g., a 14-hour shift wasn't flagged).
+* Your environment (Browser, OS).
+* A sample CSV (with sensitive names removed).
+
+### 2. Feature Requests
+I am particularly interested in features that improve **workflow efficiency** and **labor compliance**. If you have ideas for new "Optimization Styles," please let me know!
+
+### 3. Code Contributions
+1. **Fork** the repository.
+2. **Create a feature branch** (`git checkout -b feature/AmazingFeature`).
+3. **Ensure Clean Code:** I follow the **Single Responsibility Principle** to keep the logic decoupled and maintainable.
+4. **Submit a Pull Request:** Briefly explain how your change helps a store manager or employee.
+
+### 📜 Code of Conduct
+As a leader who has spent years **building positive client relationships** and **promoting team cohesion**, I expect all contributors to maintain a professional, supportive, and respectful tone.
+
+
