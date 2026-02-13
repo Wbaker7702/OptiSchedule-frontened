@@ -33,7 +33,7 @@ OptiSchedule-pro is built for scale, utilizing a decoupled architecture to separ
 **A Compliance-First Labor Optimization Engine**
 
 ### 📝 Overview
-[span_1](start_span)OptiSchedule Pro is a scheduling solution designed to solve the real-world operational gaps I witnessed while managing departments with **over $1M in annual sales**[span_1](end_span). [span_2](start_span)[span_3](start_span)Unlike standard calendars, this tool focuses on **regulatory compliance** and **resource matching** for high-volume environments like retail, food service, and casinos[span_2](end_span)[span_3](end_span).
+(start_span)OptiSchedule Pro is a scheduling solution designed to solve the real-world operational gaps I witnessed while managing departments with **over $1M in annual sales**(end_span). (start_span)(start_span)Unlike standard calendars, this tool focuses on **regulatory compliance** and **resource matching** for high-volume environments like retail, food service, and casinos(end_span)(end_span).
 
 ### ✨ Key Features
 * **Hybrid Data Ingestion:** Supports both live database queries and CSV file uploads for maximum flexibility.
