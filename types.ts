@@ -122,3 +122,12 @@ export interface StoreRatingData {
   safetyScore: number;
   lastAudit: string;
 }
+
+export interface ScheduleLogEntry {
+  id: string;
+  timestamp: string;
+  manager: string;
+  action: string;
+  reason: string;
+  impact: string;
+}

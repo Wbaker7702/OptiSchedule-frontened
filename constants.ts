@@ -1,5 +1,5 @@
 
-import { Employee, Product, HeatmapDataPoint, DepartmentMetric, IngressDataPoint, Vulnerability, AuditLog, LaborLawConfig, SystemPlugin, StoreRatingData } from './types';
+import { Employee, Product, HeatmapDataPoint, DepartmentMetric, IngressDataPoint, Vulnerability, AuditLog, LaborLawConfig, SystemPlugin, StoreRatingData, ScheduleLogEntry } from './types';
 
 export const CURRENT_USER = "Wesley Baker";
 export const STORE_NUMBER = "5065";
@@ -243,4 +243,9 @@ export const MOCK_STORES: StoreRatingData[] = [
   { id: '3120', location: 'Indianapolis', state: 'IN', overallScore: 84, customerExperience: 82, operationalEfficiency: 85, laborCompliance: 90, fiscalROI: 83, safetyScore: 92, lastAudit: '2026-02-05' },
   { id: '4050', location: 'Chicago', state: 'IL', overallScore: 87, customerExperience: 86, operationalEfficiency: 88, laborCompliance: 93, fiscalROI: 85, safetyScore: 94, lastAudit: '2026-02-01' },
   { id: '1001', location: 'Detroit', state: 'MI', overallScore: 90, customerExperience: 89, operationalEfficiency: 92, laborCompliance: 95, fiscalROI: 89, safetyScore: 97, lastAudit: '2026-01-28' },
+];
+
+export const MOCK_SCHEDULE_LOGS: ScheduleLogEntry[] = [
+  { id: 'SL-001', timestamp: '2026-02-15 08:32', manager: 'Wesley Baker', action: 'Increased 9:00 AM Front End Staffing', reason: 'Unplanned High Traffic', impact: 'Efficiency +4%' },
+  { id: 'SL-002', timestamp: '2026-02-15 07:15', manager: 'System (Auto)', action: 'Reduced 7:00 AM Grocery Staffing', reason: 'Low Ingress Volume', impact: 'Labor Cost -0.2%' },
 ];
