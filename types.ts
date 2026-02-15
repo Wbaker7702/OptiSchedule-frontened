@@ -109,3 +109,16 @@ export interface AuditLog {
   file_path: string;
   fix: string;
 }
+
+export interface StoreRatingData {
+  id: string;
+  location: string;
+  state: string;
+  overallScore: number;
+  customerExperience: number;
+  operationalEfficiency: number;
+  laborCompliance: number;
+  fiscalROI: number;
+  safetyScore: number;
+  lastAudit: string;
+}
