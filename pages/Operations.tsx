@@ -2,7 +2,7 @@
 import React from 'react';
 import Header from '../components/Header';
 import { AUDIT_LOGS_MOCK } from '../constants';
-import { CheckCircle2, AlertTriangle, XCircle, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, XCircle, ShieldCheck, Activity } from 'lucide-react';
 
 interface OperationsProps {
   defaultTab?: any;
@@ -16,53 +16,62 @@ const Operations: React.FC<OperationsProps> = () => {
   const failedCount = AUDIT_LOGS_MOCK.filter(l => l.status === 'Failed').length;
 
   return (
-    <div className="flex-1 bg-gray-50 overflow-auto custom-scrollbar font-sans text-gray-900">
+    <div className="flex-1 bg-[#020617] overflow-auto custom-scrollbar font-sans text-slate-200">
       <Header title="Operations" subtitle="Audit tracking & compliance management" />
 
       <div className="p-8 max-w-7xl mx-auto space-y-8">
         
         {/* Status Cards */}
-        <div className="space-y-4">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-            <div className="p-3 bg-emerald-50 rounded-lg">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-800 flex items-center gap-4 hover:border-emerald-500/30 transition-colors">
+            <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
                <CheckCircle2 className="w-6 h-6 text-emerald-500" />
             </div>
             <div>
-               <h3 className="text-2xl font-bold text-gray-900">{passedCount + 28}</h3>
-               <p className="text-xs text-gray-500">Passed this month</p>
+               <h3 className="text-3xl font-black text-white">{passedCount + 28}</h3>
+               <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Passed this month</p>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-            <div className="p-3 bg-amber-50 rounded-lg">
+          <div className="bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-800 flex items-center gap-4 hover:border-amber-500/30 transition-colors">
+            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20">
                <AlertTriangle className="w-6 h-6 text-amber-500" />
             </div>
             <div>
-               <h3 className="text-2xl font-bold text-gray-900">{warningCount + 6}</h3>
-               <p className="text-xs text-gray-500">Warnings this month</p>
+               <h3 className="text-3xl font-black text-white">{warningCount + 6}</h3>
+               <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Warnings this month</p>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-            <div className="p-3 bg-red-50 rounded-lg">
+          <div className="bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-800 flex items-center gap-4 hover:border-red-500/30 transition-colors">
+            <div className="p-3 bg-red-500/10 rounded-xl border border-red-500/20">
                <XCircle className="w-6 h-6 text-red-500" />
             </div>
             <div>
-               <h3 className="text-2xl font-bold text-gray-900">{failedCount + 2}</h3>
-               <p className="text-xs text-gray-500">Failed this month</p>
+               <h3 className="text-3xl font-black text-white">{failedCount + 2}</h3>
+               <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Failed this month</p>
             </div>
           </div>
         </div>
 
         {/* Audit Log Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-             <h3 className="text-sm font-bold text-gray-900">Audit & Compliance Log</h3>
-             <p className="text-xs text-gray-500 mt-1">Recent inspection results across all stores</p>
+        <div className="bg-slate-900 rounded-2xl shadow-lg border border-slate-800 overflow-hidden">
+          <div className="p-6 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between">
+             <div>
+                <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+                   <Activity className="w-4 h-4 text-blue-500" />
+                   Audit & Compliance Log
+                </h3>
+                <p className="text-[10px] text-slate-500 font-mono mt-1 uppercase">Recent inspection results across all stores</p>
+             </div>
+             <div className="flex gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Live Feed</span>
+             </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider text-[10px]">
+              <thead className="bg-slate-950 text-slate-500 font-black uppercase tracking-widest text-[9px]">
                 <tr>
                   <th className="px-6 py-4">ID</th>
                   <th className="px-6 py-4">Date</th>
@@ -71,26 +80,26 @@ const Operations: React.FC<OperationsProps> = () => {
                   <th className="px-6 py-4 text-right">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50 text-sm">
+              <tbody className="divide-y divide-slate-800 text-sm font-mono text-slate-300">
                 {AUDIT_LOGS_MOCK.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 font-mono text-xs text-gray-500">
+                  <tr key={log.id} className="hover:bg-slate-800/50 transition-colors group">
+                    <td className="px-6 py-4 text-slate-500 text-xs">
                       {log.id}
                     </td>
-                    <td className="px-6 py-4 text-gray-600">
+                    <td className="px-6 py-4 text-slate-400">
                       {log.date}
                     </td>
-                    <td className="px-6 py-4 font-medium text-gray-900">
+                    <td className="px-6 py-4 font-bold text-white group-hover:text-blue-400 transition-colors">
                       {log.store}
                     </td>
-                    <td className="px-6 py-4 text-gray-600">
+                    <td className="px-6 py-4 text-slate-400">
                       {log.type}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide ${
-                        log.status === 'Passed' ? 'bg-emerald-50 text-emerald-600' : 
-                        log.status === 'Warning' ? 'bg-amber-50 text-amber-600' : 
-                        'bg-red-50 text-red-600'
+                      <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest border ${
+                        log.status === 'Passed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
+                        log.status === 'Warning' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 
+                        'bg-red-500/10 text-red-400 border-red-500/20'
                       }`}>
                         {log.status}
                       </span>

@@ -8,6 +8,10 @@ export const APP_VERSION = "v4.2.0";
 export const SENTINEL_VERSION = "v3.1";
 export const CURRENT_STATE = "MI";
 
+export const WEEKLY_REVENUE_TARGET = 90000;
+export const TARGET_LABOR_PCT = 0.18;
+export const TARGET_SPLH = 150.00;
+
 export interface StorePerformance {
   id: string;
   name: string;
@@ -22,6 +26,16 @@ export const STORE_PERFORMANCE_DATA: StorePerformance[] = [
   { id: '23', name: 'Store #23 - Mall East', laborEfficiency: 93.7, shrinkRate: 1.6, adherence: 92.1 },
   { id: '3', name: 'Store #3 - Harbor', laborEfficiency: 85.2, shrinkRate: 3.1, adherence: 81.4 },
   { id: '15', name: 'Store #15 - Uptown', laborEfficiency: 91.8, shrinkRate: 1.9, adherence: 90.3 },
+];
+
+export const REVENUE_RECOVERY_DATA = [
+  { day: 'Mon', target: 12850, realized: 12100 },
+  { day: 'Tue', target: 25700, realized: 23400 },
+  { day: 'Wed', target: 38550, realized: 35200 },
+  { day: 'Thu', target: 51400, realized: 46800 },
+  { day: 'Fri', target: 64250, realized: 58500 },
+  { day: 'Sat', target: 77100, realized: 70100 },
+  { day: 'Sun', target: 90000, realized: 82450 },
 ];
 
 export const REVENUE_VS_LABOR = [

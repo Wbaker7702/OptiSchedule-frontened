@@ -1,5 +1,6 @@
+
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, Search, AlertCircle, CheckCircle2, Info } from 'lucide-react';
+import { Bell, Search, AlertCircle, CheckCircle2, Info, ChevronDown } from 'lucide-react';
 import { CURRENT_USER } from '../constants';
 
 interface HeaderProps {
@@ -33,66 +34,66 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
   ];
 
   return (
-    <header className="bg-white border-b border-gray-200 px-8 py-5 flex items-center justify-between sticky top-0 z-40 shadow-sm">
+    <header className="bg-[#0f172a] border-b border-slate-800 px-8 py-5 flex items-center justify-between sticky top-0 z-40 shadow-sm backdrop-blur-sm bg-opacity-90">
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
-        {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+        <h1 className="text-2xl font-black text-white tracking-tight">{title}</h1>
+        {subtitle && <p className="text-xs font-mono text-slate-400 mt-1 uppercase tracking-widest">{subtitle}</p>}
       </div>
       
       <div className="flex items-center gap-6">
-        <div className="relative hidden md:block">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+        <div className="relative hidden md:block group">
+          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 transform -translate-y-1/2 group-hover:text-slate-300 transition-colors" />
           <input 
             type="text" 
-            placeholder="Search..." 
-            className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 transition-all text-gray-900 placeholder-gray-400"
+            placeholder="SEARCH COMMANDS..." 
+            className="pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-64 transition-all text-slate-200 placeholder-slate-600"
           />
         </div>
         
         <div className="relative" ref={notificationRef}>
           <button 
             onClick={() => setShowNotifications(!showNotifications)}
-            className={`relative p-2 rounded-full transition-colors ${showNotifications ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
+            className={`relative p-2 rounded-full transition-colors ${showNotifications ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
           >
             <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-[#0f172a]"></span>
           </button>
 
           {/* Notifications Dropdown */}
           {showNotifications && (
-            <div className="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="p-4 border-b border-gray-100 flex justify-between items-center">
-                <h3 className="font-semibold text-gray-900">Notifications</h3>
-                <button className="text-xs text-blue-600 hover:text-blue-700">Mark all read</button>
+            <div className="absolute right-0 mt-3 w-80 bg-slate-900 rounded-xl shadow-2xl border border-slate-800 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+              <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+                <h3 className="font-bold text-white text-xs uppercase tracking-widest">Notifications</h3>
+                <button className="text-[10px] font-bold text-blue-400 hover:text-blue-300 uppercase">Mark all read</button>
               </div>
-              <div className="max-h-96 overflow-y-auto">
+              <div className="max-h-96 overflow-y-auto custom-scrollbar">
                 {notifications.map((notif) => (
-                  <div key={notif.id} className="p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer flex gap-3">
+                  <div key={notif.id} className="p-4 border-b border-slate-800 hover:bg-slate-800/50 transition-colors cursor-pointer flex gap-3">
                     <div className="mt-1 shrink-0">
-                      {notif.type === 'alert' && <AlertCircle className="w-5 h-5 text-red-500" />}
-                      {notif.type === 'info' && <Info className="w-5 h-5 text-blue-500" />}
-                      {notif.type === 'success' && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                      {notif.type === 'alert' && <AlertCircle className="w-4 h-4 text-red-500" />}
+                      {notif.type === 'info' && <Info className="w-4 h-4 text-blue-500" />}
+                      {notif.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
                     </div>
                     <div>
-                      <p className="text-sm text-gray-800 leading-snug">{notif.text}</p>
-                      <p className="text-xs text-gray-400 mt-1">{notif.time}</p>
+                      <p className="text-xs text-slate-200 leading-snug font-medium">{notif.text}</p>
+                      <p className="text-[10px] text-slate-500 mt-1 font-mono">{notif.time}</p>
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="p-3 bg-gray-50 text-center">
-                <button className="text-sm text-gray-600 hover:text-gray-900 font-medium">View All Activity</button>
+              <div className="p-2 bg-slate-950 text-center border-t border-slate-800">
+                <button className="text-[10px] text-slate-400 hover:text-white font-bold uppercase tracking-widest py-2 w-full">View All Activity</button>
               </div>
             </div>
           )}
         </div>
         
-        <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
+        <div className="flex items-center gap-3 pl-4 border-l border-slate-800">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-semibold text-gray-800">{CURRENT_USER}</p>
-            <p className="text-xs text-gray-500">Store Manager</p>
+            <p className="text-xs font-bold text-white">{CURRENT_USER}</p>
+            <p className="text-[10px] text-slate-500 font-mono uppercase">Store Manager</p>
           </div>
-          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold border border-blue-200 cursor-pointer hover:bg-blue-200 transition-colors">
+          <div className="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center text-blue-400 font-black text-xs border border-slate-700 cursor-pointer hover:bg-slate-700 hover:border-slate-600 transition-all shadow-lg">
             WB
           </div>
         </div>
