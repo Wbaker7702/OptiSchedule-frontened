@@ -9,7 +9,6 @@ export enum View {
   PLAYBOOK = 'PLAYBOOK',
   SETTINGS = 'SETTINGS',
   COMPARISON = 'COMPARISON',
-  MARKETPLACE = 'MARKETPLACE',
   METRICS_REPORT = 'METRICS_REPORT',
   ROYALTY_DASHBOARD = 'ROYALTY_DASHBOARD',
   STORE_RATINGS = 'STORE_RATINGS',
@@ -109,4 +108,26 @@ export interface AuditLog {
   file: string;
   file_path: string;
   fix: string;
+}
+
+export interface StoreRatingData {
+  id: string;
+  location: string;
+  state: string;
+  overallScore: number;
+  customerExperience: number;
+  operationalEfficiency: number;
+  laborCompliance: number;
+  fiscalROI: number;
+  safetyScore: number;
+  lastAudit: string;
+}
+
+export interface ScheduleLogEntry {
+  id: string;
+  timestamp: string;
+  manager: string;
+  action: string;
+  reason: string;
+  impact: string;
 }

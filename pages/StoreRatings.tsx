@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import Header from '../components/Header';
-import { MOCK_STORES, StoreRatingData } from '../constants';
+import { MOCK_STORES } from '../constants';
+import { StoreRatingData } from '../types';
 import { ChevronLeft, ChevronRight, Star, ShieldCheck, Activity, Users, Target, TrendingUp, BarChart3, MapPin, Search, Calendar, Award, Loader2 } from 'lucide-react';
 
 const StoreRatings: React.FC = () => {

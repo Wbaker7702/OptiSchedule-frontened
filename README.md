@@ -1,26 +1,16 @@
-# OptiSchedule-pro 🗓️
-> Enterprise-grade scheduling optimization powered by Constraint Logic and LLM Intent Extraction.
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![Version](https://img.shields.io/badge/version-1.0.0--pro-blue)
+# Run and deploy your AI Studio app
 
-## 🏗️ Architecture Overview
-OptiSchedule-pro is built for scale, utilizing a decoupled architecture to separate language processing from scheduling math.
-- **Frontend:** React / Next.js
-- **Backend:** Node.js / Python (FastAPI)
-- **Data Layer:** PostgreSQL (Time-series optimized)
-- **Cache/Queue:** Redis (for asynchronous optimization tasks)
-- **AI:** OpenAI GPT-4o via Function Calling
+This contains everything you need to run your app locally.
 
-## 🚀 Getting Started
+View your app in AI Studio: https://ai.studio/apps/drive/1t9N6qD-bsuD6OLWG_mKSU2RdZlj1jyCD
 
-### Prerequisites
-- Node.js (v18+) or Python 3.10+
-- PostgreSQL 14+
-- Redis 6+
-- OpenAI API Key
+## Run Locally
 
-### 🛠️ Installation & Setup
+**Prerequisites:**  Node.js
 
 1. **Clone the repository**
    ```bash
@@ -54,3 +44,9 @@ OptiSchedule-pro is built for scale, utilizing a decoupled architecture to separ
 2. Upload your current labor schedule via CSV.
 3. Hit **"Optimize"** to trigger the compliance audit.
 4. Download your corrected, optimized schedule.
+
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`

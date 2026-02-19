@@ -1,32 +1,71 @@
 
-import { Employee, Product, HeatmapDataPoint, DepartmentMetric, IngressDataPoint, Vulnerability, AuditLog, LaborLawConfig, SystemPlugin } from './types';
+import { Employee, Product, HeatmapDataPoint, DepartmentMetric, IngressDataPoint, Vulnerability, AuditLog, LaborLawConfig, SystemPlugin, StoreRatingData, ScheduleLogEntry } from './types';
 
 export const CURRENT_USER = "Wesley Baker";
 export const STORE_NUMBER = "5065";
 export const COMPARISON_STORE = "2080";
-export const APP_VERSION = "v4.2.0-Sentinel-Hardened"; // Q1 2026 Update
+export const APP_VERSION = "v4.2.0"; 
 export const SENTINEL_VERSION = "v3.1";
 export const CURRENT_STATE = "MI";
 
-export interface StoreRatingData {
+export const WEEKLY_REVENUE_TARGET = 90000;
+export const TARGET_LABOR_PCT = 0.18;
+export const TARGET_SPLH = 150.00;
+
+export interface StorePerformance {
   id: string;
-  location: string;
-  state: string;
-  overallScore: number;
-  customerExperience: number;
-  operationalEfficiency: number;
-  laborCompliance: number;
-  fiscalROI: number;
-  safetyScore: number;
-  lastAudit: string;
+  name: string;
+  laborEfficiency: number;
+  shrinkRate: number;
+  adherence: number;
 }
 
-export const MOCK_STORES: StoreRatingData[] = [
-  { id: "5065", location: "Kalamazoo", state: "MI", overallScore: 92, customerExperience: 88, operationalEfficiency: 94, laborCompliance: 98, fiscalROI: 85, safetyScore: 95, lastAudit: "2024-05-15" },
-  { id: "2080", location: "Detroit", state: "MI", overallScore: 84, customerExperience: 82, operationalEfficiency: 79, laborCompliance: 91, fiscalROI: 76, safetyScore: 89, lastAudit: "2024-04-20" },
-  { id: "1010", location: "Columbus", state: "OH", overallScore: 78, customerExperience: 75, operationalEfficiency: 72, laborCompliance: 85, fiscalROI: 68, safetyScore: 82, lastAudit: "2024-05-01" },
-  { id: "3030", location: "Chicago", state: "IL", overallScore: 95, customerExperience: 92, operationalEfficiency: 96, laborCompliance: 99, fiscalROI: 91, safetyScore: 97, lastAudit: "2024-05-18" },
-  { id: "4040", location: "Indianapolis", state: "IN", overallScore: 81, customerExperience: 79, operationalEfficiency: 83, laborCompliance: 88, fiscalROI: 74, safetyScore: 85, lastAudit: "2024-03-12" },
+export const STORE_PERFORMANCE_DATA: StorePerformance[] = [
+  { id: '12', name: 'Store #12 - Downtown', laborEfficiency: 96.1, shrinkRate: 1.2, adherence: 94.5 },
+  { id: '7', name: 'Store #7 - Westfield', laborEfficiency: 89.3, shrinkRate: 2.4, adherence: 87.2 },
+  { id: '23', name: 'Store #23 - Mall East', laborEfficiency: 93.7, shrinkRate: 1.6, adherence: 92.1 },
+  { id: '3', name: 'Store #3 - Harbor', laborEfficiency: 85.2, shrinkRate: 3.1, adherence: 81.4 },
+  { id: '15', name: 'Store #15 - Uptown', laborEfficiency: 91.8, shrinkRate: 1.9, adherence: 90.3 },
+];
+
+export const REVENUE_RECOVERY_DATA = [
+  { day: 'Mon', target: 12850, realized: 12100 },
+  { day: 'Tue', target: 25700, realized: 23400 },
+  { day: 'Wed', target: 38550, realized: 35200 },
+  { day: 'Thu', target: 51400, realized: 46800 },
+  { day: 'Fri', target: 64250, realized: 58500 },
+  { day: 'Sat', target: 77100, realized: 70100 },
+  { day: 'Sun', target: 90000, realized: 82450 },
+];
+
+export const REVENUE_VS_LABOR = [
+  { month: 'Jan', revenue: 4200, laborCost: 1800, target: 1600 },
+  { month: 'Feb', revenue: 4500, laborCost: 1850, target: 1700 },
+  { month: 'Mar', revenue: 4800, laborCost: 1950, target: 1800 },
+  { month: 'Apr', revenue: 4700, laborCost: 1900, target: 1800 },
+  { month: 'May', revenue: 5100, laborCost: 2050, target: 1950 },
+  { month: 'Jun', revenue: 5400, laborCost: 2100, target: 2000 },
+];
+
+export const WEEKLY_HEATMAP = [
+  { day: 'Mon', hours: [5, 5, 3, 5, 5, 8, 8, 9] },
+  { day: 'Tue', hours: [7, 4, 7, 5, 4, 9, 10, 8] },
+  { day: 'Wed', hours: [4, 6, 4, 5, 6, 9, 8, 9] },
+  { day: 'Thu', hours: [4, 4, 6, 6, 6, 8, 10, 7] },
+  { day: 'Fri', hours: [4, 6, 4, 4, 6, 9, 9, 11] },
+  { day: 'Sat', hours: [8, 7, 5, 7, 7, 11, 12, 11] },
+  { day: 'Sun', hours: [7, 7, 5, 6, 5, 11, 12, 11] },
+];
+
+export const AUDIT_LOGS_MOCK = [
+  { id: 'AUD-001', date: '2026-02-14', store: 'Store #12 - Downtown', type: 'Safety', status: 'Passed' },
+  { id: 'AUD-002', date: '2026-02-13', store: 'Store #7 - Westfield', type: 'Compliance', status: 'Warning' },
+  { id: 'AUD-003', date: '2026-02-13', store: 'Store #23 - Mall East', type: 'Inventory', status: 'Passed' },
+  { id: 'AUD-004', date: '2026-02-12', store: 'Store #3 - Harbor', type: 'Safety', status: 'Failed' },
+  { id: 'AUD-005', date: '2026-02-12', store: 'Store #15 - Uptown', type: 'HR Compliance', status: 'Passed' },
+  { id: 'AUD-006', date: '2026-02-11', store: 'Store #9 - Lakeside', type: 'Inventory', status: 'Passed' },
+  { id: 'AUD-007', date: '2026-02-11', store: 'Store #31 - Airport', type: 'Compliance', status: 'Passed' },
+  { id: 'AUD-008', date: '2026-02-10', store: 'Store #5 - Central', type: 'Safety', status: 'Passed' },
 ];
 
 export const HOURLY_LOGISTICS = [
@@ -114,7 +153,7 @@ export const PLUGIN_REGISTRY: SystemPlugin[] = [
     provider: 'Microsoft Azure',
     description: 'Edge-based computer vision for inventory & safety.',
     version: '3.1.0',
-    status: 'Available',
+    status: 'Mounted',
     iconName: 'Eye'
   }
 ];
@@ -147,7 +186,9 @@ export const DATE_STRING = new Date().toLocaleDateString('en-US', { weekday: 'lo
 export const FISCAL_METRICS = {
   avgPayRate: 14.00,
   targetWeeklyHoursRecapture: 186,
+  initialWeeklyLoss: 90000,
   executionLeakage: 12500,
+  previousROI: 10.3,
   currentROI: 12.4,
   annualRecoveryTarget: 4.68,
   vision2028: 491,
@@ -164,10 +205,16 @@ export const EMPLOYEES: Employee[] = [
 ];
 
 export const HEATMAP_DATA: HeatmapDataPoint[] = [
-  { hour: '8 AM', transactionVolume: 45, staffing: 8, efficiency: 85 },
-  { hour: '12 PM', transactionVolume: 180, staffing: 14, efficiency: 25 },
-  { hour: '6 PM', transactionVolume: 130, staffing: 10, efficiency: 50 },
-  { hour: '10 PM', transactionVolume: 50, staffing: 6, efficiency: 95 },
+  { hour: '8 AM', transactionVolume: 16, staffing: 5, efficiency: 98 },
+  { hour: '9 AM', transactionVolume: 30, staffing: 6, efficiency: 96 },
+  { hour: '10 AM', transactionVolume: 57, staffing: 8, efficiency: 94 },
+  { hour: '11 AM', transactionVolume: 74, staffing: 10, efficiency: 92 },
+  { hour: '12 PM', transactionVolume: 87, staffing: 14, efficiency: 88 },
+  { hour: '1 PM', transactionVolume: 77, staffing: 12, efficiency: 89 },
+  { hour: '2 PM', transactionVolume: 64, staffing: 10, efficiency: 93 },
+  { hour: '3 PM', transactionVolume: 57, staffing: 8, efficiency: 95 },
+  { hour: '4 PM', transactionVolume: 50, staffing: 7, efficiency: 97 },
+  { hour: '5 PM', transactionVolume: 40, staffing: 6, efficiency: 98 },
 ];
 
 export const AZURE_TELEMETRY = {
@@ -203,3 +250,16 @@ export const VULNERABILITY_DATA: Vulnerability[] = [
 
 export const HUBSPOT_METRICS = { activeCampaigns: 4, loyaltySignups: 1250, attributedRevenue: 15400, syncStatus: 'Connected' };
 export const SYSTEM_HEALTH = { status: 'Operational', uptime: '99.99%', latency: '24ms', environment: 'Production', railsVersion: '8.0.0', syncCycle: 'Active' };
+
+export const MOCK_STORES: StoreRatingData[] = [
+  { id: '5065', location: 'Battle Creek', state: 'MI', overallScore: 92, customerExperience: 88, operationalEfficiency: 94, laborCompliance: 98, fiscalROI: 91, safetyScore: 99, lastAudit: '2026-02-10' },
+  { id: '2080', location: 'Toledo', state: 'OH', overallScore: 89, customerExperience: 85, operationalEfficiency: 91, laborCompliance: 96, fiscalROI: 88, safetyScore: 95, lastAudit: '2026-02-08' },
+  { id: '3120', location: 'Indianapolis', state: 'IN', overallScore: 84, customerExperience: 82, operationalEfficiency: 85, laborCompliance: 90, fiscalROI: 83, safetyScore: 92, lastAudit: '2026-02-05' },
+  { id: '4050', location: 'Chicago', state: 'IL', overallScore: 87, customerExperience: 86, operationalEfficiency: 88, laborCompliance: 93, fiscalROI: 85, safetyScore: 94, lastAudit: '2026-02-01' },
+  { id: '1001', location: 'Detroit', state: 'MI', overallScore: 90, customerExperience: 89, operationalEfficiency: 92, laborCompliance: 95, fiscalROI: 89, safetyScore: 97, lastAudit: '2026-01-28' },
+];
+
+export const MOCK_SCHEDULE_LOGS: ScheduleLogEntry[] = [
+  { id: 'SL-001', timestamp: '2026-02-15 08:32', manager: 'Wesley Baker', action: 'Increased 9:00 AM Front End Staffing', reason: 'Unplanned High Traffic', impact: 'Efficiency +4%' },
+  { id: 'SL-002', timestamp: '2026-02-15 07:15', manager: 'System (Auto)', action: 'Reduced 7:00 AM Grocery Staffing', reason: 'Low Ingress Volume', impact: 'Labor Cost -0.2%' },
+];
