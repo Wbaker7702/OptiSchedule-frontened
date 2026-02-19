@@ -1,6 +1,7 @@
 # OptiSchedule API
 
 Backend API for OptiSchedule Pro, built with Node.js, Express, and Prisma.
+This service is currently intended for Walmart-only internal use.
 
 ## Tech Stack
 
@@ -33,65 +34,9 @@ Backend API for OptiSchedule Pro, built with Node.js, Express, and Prisma.
 └── FL.js
 ```
 
-## Prerequisites
-
-- Node.js 18+
-- npm
-- PostgreSQL database
-
-## Installation
-
-1. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-2. Create a `.env` file in the project root.
-
-3. Add the required environment variables:
-
-   ```env
-   NODE_ENV=development
-   PORT=4000
-   DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DB_NAME?schema=public
-   JWT_SECRET=your_jwt_secret_at_least_32_characters
-   GOOGLE_GENAI_API_KEY=your_google_genai_api_key
-   CORS_ORIGIN=http://localhost:3000
-   ```
-
-4. Run Prisma migrations and generate the client:
-
-   ```bash
-   npx prisma migrate dev
-   npx prisma generate
-   ```
-
-5. (Optional) Seed demo data:
-
-   ```bash
-   node seed.js
-   ```
-
-## Running the API
-
-- Development:
-
-  ```bash
-  npm run dev
-  ```
-
-- Production:
-
-  ```bash
-  npm start
-  ```
-
-The server runs on `PORT` (default: `4000`).
-
 ## Available Routes
 
-Base URL: `http://localhost:4000`
+Route paths (base URL is environment-specific):
 
 - `GET /health`  
   Returns API health status.
