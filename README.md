@@ -1,12 +1,11 @@
 # OptiSchedule API
 
 Backend API for OptiSchedule Pro, built with Node.js, Express, and Prisma.
-This service is currently intended for Walmart-only internal use.
 
 ## What is OptiSchedule Pro?
 
-OptiSchedule Pro is a Walmart-focused scheduling and labor-compliance platform.
-It helps store teams build shifts with clear, policy-aware decisions so schedules can be created faster and with fewer manual checks.
+OptiSchedule Pro is a scheduling and labor-compliance platform.
+It helps teams build shifts with clear, policy-aware decisions so schedules can be created faster and with fewer manual checks.
 
 ## What it can do
 
