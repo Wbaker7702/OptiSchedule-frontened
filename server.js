@@ -1,61 +1,30 @@
-// ============================
-// Core Imports
-// ============================
 const express = require("express");
 const cors = require("cors");
-const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
+require("dotenv").config();
 
-// ============================
-// Load Environment (Correct Way)
-// ============================
-require("dotenv").config({
-  path: `.env.${process.env.NODE_ENV || "development"}`
-});
-
-// Validate Environment
-const env = require("./config/env");
-
-// ============================
-// Initialize App
-// ============================
 const app = express();
 
-// ============================
-// Security Middleware
-// ============================
-app.use(helmet());
-
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100
-}));
-
-app.use(cors({
-  origin: env.CORS_ORIGIN,
-  credentials: true
-}));
-
+// Middleware
+app.use(cors());
 app.use(express.json());
 
-// ============================
-// Routes
-// ============================
+// Health Route
 app.get("/health", (req, res) => {
   res.json({ status: "OK" });
 });
 
-// Example Protected Route Placeholder
+// Test Route
 app.get("/api/protected", (req, res) => {
   res.json({ message: "Protected route working." });
 });
 
-// ============================
+// Shift Routes
+const shiftRoutes = require("./routes/shifts");
+app.use("/api/shifts", shiftRoutes);
+
 // Start Server
-// ============================
-const PORT = env.PORT;
+const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running in ${env.NODE_ENV} mode on port ${PORT}`);
+  console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });
-
