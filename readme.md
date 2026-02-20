@@ -73,8 +73,12 @@ Server default: `http://localhost:4000`
 ```text
 .
 ├── middleware/
+│   └── auth.js
 ├── prisma/
+│   └── schema.prisma
 ├── routes/
+│   ├── auth.js
+│   └── shifts.js
 ├── server.js
 └── package.json
 ```
