@@ -7,6 +7,20 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const shiftsRouter = require("./routes/shifts");
+const aiRouter = require("./routes/ai");
+
+const app = express();
+app.set("trust proxy", 1);
+app.disable("x-powered-by");
+
+const JWT_SECRET = process.env.JWT_SECRET;
+const COOKIE_NAME = "opti_session";
+const IS_PROD = process.env.NODE_ENV === "production";
+
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+  throw new Error("JWT_SECRET must be set and at least 32 characters long.");
+}
 const aiRouter = require("./routes/ai");
 
 const app = express();
@@ -69,6 +83,17 @@ app.use(
     contentSecurityPolicy: {
       useDefaults: true,
       directives: {
+        "default-src": ["'self'"],
+        "script-src": ["'self'", "'unsafe-inline'"],
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "img-src": ["'self'", "data:"],
+        "connect-src": ["'self'"],
+        "object-src": ["'none'"],
+        "base-uri": ["'self'"],
+        "frame-ancestors": ["'none'"],
+        "form-action": ["'self'"],
+      },
+    },
         defaultSrc: ["'self'"],
         baseUri: ["'self'"],
         connectSrc: ["'self'"],
@@ -97,6 +122,10 @@ app.use(
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: "Too many login attempts. Please try again later.",
   max: 12,
   standardHeaders: true,
   legacyHeaders: false,
@@ -109,6 +138,38 @@ function signSession(payload) {
 }
 
 function setSessionCookie(res, token) {
+  res.cookie(COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: IS_PROD, // true under https
+    sameSite: "strict",
+    maxAge: 8 * 60 * 60 * 1000,
+    path: "/",
+  });
+}
+
+function clearSessionCookie(res) {
+  res.clearCookie(COOKIE_NAME, {
+    path: "/",
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: "strict",
+  });
+}
+
+function isApiRequest(req) {
+  const accepts = req.headers.accept || "";
+  return (
+    req.originalUrl.startsWith("/api/") ||
+    accepts.includes("application/json") ||
+    req.xhr
+  );
+}
+
+function rejectUnauthorized(req, res) {
+  if (isApiRequest(req)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  return res.redirect("/");
   res.cookie(COOKIE_NAME, token, COOKIE_OPTIONS);
 }
 
@@ -118,7 +179,7 @@ function clearSessionCookie(res) {
 
 function requireAuth(req, res, next) {
   const token = req.cookies[COOKIE_NAME];
-  if (!token) return res.redirect("/");
+  if (!token) return rejectUnauthorized(req, res);
 
   try {
     req.user = jwt.verify(token, JWT_SECRET);
@@ -126,7 +187,7 @@ function requireAuth(req, res, next) {
     return next();
   } catch (error) {
     clearSessionCookie(res);
-    return res.redirect("/");
+    return rejectUnauthorized(req, res);
   }
 }
 
@@ -209,6 +270,19 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+// ---------- APIs ----------
+app.use("/api/shifts", requireAuth, shiftsRouter);
+app.use("/api/ai", requireAuth, aiRouter);
+
+app.get("/api/session", requireAuth, (req, res) => {
+  const user = req.user || {};
+  res.json({
+    authenticated: true,
+    name: user.name || "Manager",
+    role: user.role || "manager",
+    expiresAt: user.exp ? new Date(user.exp * 1000).toISOString() : null,
+  });
+});
 app.use("/api/ai", requireAuth, requireSameOrigin, aiRouter);
 
 // ---------- UI: Login ----------
@@ -482,6 +556,16 @@ app.get("/", (req, res) => {
 });
 
 // ---------- auth ----------
+app.post("/login", loginLimiter, (req, res) => {
+  const username = String(req.body.username || "").trim();
+  const password = String(req.body.password || "");
+  if (!username || !password) return res.redirect("/");
+
+  const token = signSession({
+    userId: 1,
+    role: "manager",
+    name: username.slice(0, 80),
+  });
 app.post("/login", loginLimiter, async (req, res) => {
   const username = String(req.body?.username || "").trim();
   const password = String(req.body?.password || "");
@@ -497,12 +581,12 @@ app.post("/login", loginLimiter, async (req, res) => {
 
   const token = signSession({ userId: 1, role: "manager", name: username });
   setSessionCookie(res, token);
-  return res.redirect("/dashboard");
+  return res.redirect(303, "/dashboard");
 });
 
 app.post("/logout", requireSameOrigin, (req, res) => {
   clearSessionCookie(res);
-  res.redirect("/");
+  res.redirect(303, "/");
 });
 
 // ---------- dashboard ----------
@@ -522,6 +606,158 @@ app.get("/dashboard", requireAuth, (req, res) => {
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>OptiSchedule Pro — Dashboard</title>
 <style>
+  :root{
+    --bg:#090f1f;
+    --surface:#111b32;
+    --surface2:#0f172a;
+    --border:rgba(148,163,184,.2);
+    --text:#e2e8f0;
+    --muted:#94a3b8;
+    --primary:#2563eb;
+    --danger:#ef4444;
+    --ok:#22c55e;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    color:var(--text);
+    font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    background:
+      radial-gradient(900px 400px at 0% -10%, rgba(37,99,235,.2), transparent 50%),
+      radial-gradient(700px 300px at 100% 0%, rgba(34,197,94,.12), transparent 55%),
+      var(--bg);
+    min-height:100vh;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:26px}
+  .top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .title{font-size:24px;font-weight:900;letter-spacing:.2px}
+  .sub{color:var(--muted);font-size:13px;margin-top:6px}
+  .topRight{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .pill{
+    font-size:11px;
+    padding:7px 10px;
+    border-radius:999px;
+    border:1px solid rgba(34,197,94,.35);
+    color:#bbf7d0;
+    background:rgba(34,197,94,.12);
+    font-weight:700;
+  }
+  .logout{
+    background:transparent;
+    border:1px solid var(--border);
+    padding:10px 12px;
+    border-radius:10px;
+    color:var(--text);
+    cursor:pointer;
+    font-weight:800;
+  }
+  .metricGrid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-top:18px;
+  }
+  .card{
+    background:linear-gradient(180deg, var(--surface), var(--surface2));
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px;
+    box-shadow:0 10px 30px rgba(2,6,23,.24);
+  }
+  .label{color:var(--muted);font-size:12px}
+  .value{font-size:26px;font-weight:900;margin-top:6px}
+  .delta{font-size:11px;margin-top:6px;color:#93c5fd}
+  .panel{
+    margin-top:14px;
+    display:grid;
+    grid-template-columns:1.2fr .8fr;
+    gap:12px;
+  }
+  .h2{font-size:15px;font-weight:800;letter-spacing:.2px;margin:0}
+  .p{margin:8px 0 0 0;color:#cbd5e1;font-size:13px;line-height:1.5}
+  .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .tag{
+    font-size:11px;
+    color:#bfdbfe;
+    border:1px solid rgba(147,197,253,.28);
+    padding:6px 10px;
+    border-radius:999px;
+    background:rgba(37,99,235,.12);
+  }
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .btn{
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:#18243f;
+    color:var(--text);
+    cursor:pointer;
+    font-weight:800;
+  }
+  .btnPrimary{
+    background:linear-gradient(135deg,#dc2626,#ef4444);
+    border:none;
+  }
+  .btn:disabled{
+    opacity:.65;
+    cursor:not-allowed;
+  }
+  .status{
+    margin-top:14px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    padding:10px 12px;
+    color:var(--muted);
+    font-size:12px;
+    background:rgba(15,23,42,.45);
+  }
+  .status.ok{
+    color:#86efac;
+    border-color:rgba(34,197,94,.35);
+    background:rgba(20,83,45,.22);
+  }
+  .status.error{
+    color:#fecaca;
+    border-color:rgba(239,68,68,.35);
+    background:rgba(127,29,29,.24);
+  }
+  .noteList{
+    margin:12px 0 0 0;
+    padding-left:16px;
+    color:#cbd5e1;
+    font-size:13px;
+    line-height:1.6;
+  }
+  .activity{
+    margin:12px 0 0 0;
+    padding:0;
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .activity li{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px;
+    font-size:12px;
+    color:#cbd5e1;
+    background:rgba(15,23,42,.45);
+  }
+  @media(max-width:980px){
+    .metricGrid{grid-template-columns:repeat(2,1fr)}
+    .panel{grid-template-columns:1fr}
+  }
+  @media(max-width:640px){
+    .wrap{padding:18px}
+    .metricGrid{grid-template-columns:1fr}
+  }
   body{margin:0;background:#0b1220;color:#e5e7eb;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
   .wrap{max-width:1120px;margin:0 auto;padding:28px}
   .top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
@@ -562,32 +798,59 @@ app.get("/dashboard", requireAuth, (req, res) => {
 </head>
 <body>
   <div class="wrap">
-    <div class="top">
+    <header class="top">
       <div>
-        <div class="h1">Dashboard — Store #2080</div>
+        <div class="title">Operations Dashboard — Store #2080</div>
         <div class="sub">Welcome, ${escapeHtml(user.name || "Manager")} • Enterprise demo mode</div>
         ${noticeMarkup}
       </div>
-      <form method="POST" action="/logout">
-        <button class="logout" type="submit">Log out</button>
-      </form>
-    </div>
+      <div class="topRight">
+        <span class="pill">Session Active</span>
+        <form method="POST" action="/logout">
+          <button class="logout" type="submit">Log out</button>
+        </form>
+      </div>
+    </header>
 
-    <div class="grid">
-      <div class="card"><div class="k">Total Shifts</div><div class="v">1,204</div></div>
-      <div class="card"><div class="k">Compliance Flags</div><div class="v">0</div></div>
-      <div class="card"><div class="k">Trust Score</div><div class="v">98</div></div>
-      <div class="card"><div class="k">Missed Shifts</div><div class="v">2</div></div>
-    </div>
-
-    <div class="panel">
+    <section class="metricGrid">
       <div class="card">
-        <div class="k">Simulation Controls</div>
-        <div class="row">
+        <div class="label">Total Shifts</div>
+        <div class="value">1,204</div>
+        <div class="delta">+4.2% from last week</div>
+      </div>
+      <div class="card">
+        <div class="label">Compliance Flags</div>
+        <div class="value">0</div>
+        <div class="delta">No high-severity events</div>
+      </div>
+      <div class="card">
+        <div class="label">Trust Score</div>
+        <div class="value">98</div>
+        <div class="delta">Stable across 30 days</div>
+      </div>
+      <div class="card">
+        <div class="label">Missed Shifts</div>
+        <div class="value">2</div>
+        <div class="delta">-1 vs previous period</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="card">
+        <h2 class="h2">Simulation Controls</h2>
+        <p class="p">Run pilot simulation actions without blocking your workflow. Responses are shown below.</p>
+        <div class="tags">
           <span class="tag">Parallel Run</span>
           <span class="tag">Audit Logs Enabled</span>
           <span class="tag">JWT Protected</span>
         </div>
+        <div class="actions">
+          <button id="blackFridayBtn" class="btn btnPrimary" type="button">
+            Activate Black Friday Mode
+          </button>
+          <button id="resetBtn" class="btn" type="button">
+            Reset Simulation
+          </button>
         <div class="statusLine">
           <span class="dot ${modeClass}" aria-hidden="true"></span>
           <span>Current mode: <strong>${escapeHtml(currentMode)}</strong></span>
@@ -602,22 +865,126 @@ app.get("/dashboard", requireAuth, (req, res) => {
             <button class="btn" type="submit">Reset Simulation</button>
           </form>
         </div>
+        <div id="simStatus" class="status" role="status" aria-live="polite">
+          No simulation actions executed yet.
+        </div>
       </div>
 
       <div class="card">
+        <h2 class="h2">Operational Notes</h2>
+        <ul class="noteList">
+          <li>This pilot runs in parallel with existing systems (no disruption).</li>
+          <li>Actions are monitored and recorded for traceability.</li>
+          <li>Use reset after simulation to return to baseline mode.</li>
+        </ul>
         <div class="k">Executive Notes</div>
         <div style="margin-top:10px;color:#cbd5e1;font-size:13px;line-height:1.5">
           This pilot runs in parallel with existing systems (no disruption). Events are logged for accountability and continuous improvement.
           Controls now provide persistent mode status to reduce operator uncertainty after action changes.
         </div>
       </div>
-    </div>
+    </section>
+
+    <section class="card" style="margin-top:12px;">
+      <h2 class="h2">Recent Activity</h2>
+      <ul id="activityLog" class="activity">
+        <li>System ready. Awaiting simulation commands.</li>
+      </ul>
+    </section>
   </div>
+  <script>
+    (function () {
+      const statusEl = document.getElementById("simStatus");
+      const logEl = document.getElementById("activityLog");
+      const blackFridayBtn = document.getElementById("blackFridayBtn");
+      const resetBtn = document.getElementById("resetBtn");
+
+      function setStatus(message, kind) {
+        statusEl.textContent = message;
+        statusEl.className = "status " + (kind || "");
+      }
+
+      function appendLog(message) {
+        const item = document.createElement("li");
+        const timestamp = new Date().toLocaleTimeString();
+        item.textContent = "[" + timestamp + "] " + message;
+        logEl.prepend(item);
+      }
+
+      async function trigger(endpoint, label, button) {
+        blackFridayBtn.disabled = true;
+        resetBtn.disabled = true;
+        setStatus("Running " + label + "...", "");
+
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { Accept: "application/json" },
+            credentials: "same-origin"
+          });
+
+          if (!res.ok) {
+            throw new Error("Request failed with status " + res.status);
+          }
+
+          const payload = await res.json();
+          const mode = payload.mode || "UNKNOWN";
+          setStatus(label + " complete. Current mode: " + mode, "ok");
+          appendLog(label + " completed (mode: " + mode + ")");
+        } catch (err) {
+          setStatus("Unable to run " + label + ". Please re-authenticate and retry.", "error");
+          appendLog(label + " failed");
+        } finally {
+          blackFridayBtn.disabled = false;
+          resetBtn.disabled = false;
+          button.focus();
+        }
+      }
+
+      blackFridayBtn.addEventListener("click", function () {
+        trigger("/api/sim/black-friday", "Black Friday activation", blackFridayBtn);
+      });
+
+      resetBtn.addEventListener("click", function () {
+        trigger("/api/sim/reset", "Simulation reset", resetBtn);
+      });
+    })();
+  </script>
 </body>
 </html>`);
 });
 
 // ---------- demo API routes (JWT protected) ----------
+app.post("/api/sim/black-friday", requireAuth, (req, res) => {
+  // TODO: hook to your real spike engine
+  res.json({
+    ok: true,
+    mode: "BLACK_FRIDAY",
+    updatedAt: new Date().toISOString(),
+  });
+});
+
+app.post("/api/sim/reset", requireAuth, (req, res) => {
+  res.json({
+    ok: true,
+    mode: "NORMAL",
+    updatedAt: new Date().toISOString(),
+  });
+});
+
+// Express JSON parsing and fallback error handling
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && "body" in err) {
+    return res.status(400).json({ error: "Malformed JSON payload" });
+  }
+  return next(err);
+});
+
+app.use((req, res) => {
+  if (isApiRequest(req)) {
+    return res.status(404).json({ error: "Not found" });
+  }
+  return res.status(404).send("Not found");
 app.get("/api/sim/status", requireAuth, (req, res) => {
   res.json({
     ok: true,
