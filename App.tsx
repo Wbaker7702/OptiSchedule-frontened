@@ -18,6 +18,7 @@ import GhostInventory from './pages/GhostInventory';
 import Login from './components/Login';
 import SentinelAI from './components/SentinelAI';
 import SentinelSecurity from './pages/SentinelSecurity';
+import EnterpriseSecurity from './pages/EnterpriseSecurity';
 import { View, ERPProvider, IntegrationStatus, HeatmapDataPoint } from './types';
 import { HEATMAP_DATA } from './constants';
 
@@ -65,6 +66,7 @@ const App: React.FC = () => {
       case View.COMPARISON: return <Comparison />;
       case View.SCHEDULING: return <Scheduling setCurrentView={setCurrentView} onFinalize={() => navigateToOperations('audit')} activeProvider={activeERPProvider} setActiveProvider={setActiveERPProvider} isConnected={isERPConnected} setIsConnected={setIsERPConnected} setHubspotStatus={setHubspotStatus} heatmapData={heatmapData} onAdjustStaffing={handleStaffingAdjustment} />;
       case View.OPERATIONS: return <Operations defaultTab={operationsTab} externalTrigger={linterTrigger} onClearTrigger={() => setLinterTrigger(null)} />;
+      case View.ENTERPRISE_SECURITY: return <EnterpriseSecurity />;
       case View.INVENTORY: return <Inventory />;
       case View.ANALYTICS: return <Analytics hubspotStatus={hubspotStatus} />;
       case View.TEAM: return <Team onEmployeeAdded={handleEmployeeAdded} />;
