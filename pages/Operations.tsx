@@ -5,6 +5,7 @@ import { AUDIT_LOGS_MOCK } from '../constants';
 import { CheckCircle2, AlertTriangle, XCircle, Activity, Shield, FileText, BarChart3, Wand2, Loader2 } from 'lucide-react';
 import GovernanceTab from '../components/GovernanceTab';
 import ComplianceVisualization from '../components/ComplianceVisualization';
+import WorkforceImpact from '../components/WorkforceImpact';
 
 interface OperationsProps {
   defaultTab?: 'metrics' | 'audit' | 'vision' | 'scanner' | 'variance' | 'compliance';
@@ -115,7 +116,8 @@ const Operations: React.FC<OperationsProps> = ({ defaultTab = 'metrics', externa
 
             {/* Metrics Visualization */}
             {activeTab === 'metrics' && (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <WorkforceImpact />
                 <ComplianceVisualization />
               </div>
             )}
