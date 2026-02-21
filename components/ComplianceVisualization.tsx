@@ -1,15 +1,19 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { AUDIT_LOGS_MOCK } from '../constants';
+import { AuditLog } from '../types';
 
-const ComplianceVisualization: React.FC = () => {
+interface ComplianceVisualizationProps {
+  logs: AuditLog[];
+}
+
+const ComplianceVisualization: React.FC<ComplianceVisualizationProps> = ({ logs }) => {
   // Process data
-  const categories = Array.from(new Set(AUDIT_LOGS_MOCK.map(log => log.type)));
+  const categories = Array.from(new Set(logs.map(log => log.type)));
   
   const data = categories.map(category => {
-    const logs = AUDIT_LOGS_MOCK.filter(log => log.type === category);
-    const total = logs.length;
-    const passed = logs.filter(log => log.status === 'Passed').length;
+    const categoryLogs = logs.filter(log => log.type === category);
+    const total = categoryLogs.length;
+    const passed = categoryLogs.filter(log => log.status === 'Passed').length;
     
     return {
       name: category,

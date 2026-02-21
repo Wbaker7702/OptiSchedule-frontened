@@ -16,6 +16,7 @@ interface OperationsProps {
 const Operations: React.FC<OperationsProps> = ({ defaultTab = 'metrics', externalTrigger, onClearTrigger }) => {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [isFixing, setIsFixing] = useState(false);
+  const [logs, setLogs] = useState(AUDIT_LOGS_MOCK);
 
   useEffect(() => {
     if (defaultTab) setActiveTab(defaultTab);
@@ -24,13 +25,21 @@ const Operations: React.FC<OperationsProps> = ({ defaultTab = 'metrics', externa
   const handleAutoFix = () => {
     setIsFixing(true);
     setTimeout(() => {
+      // Auto-resolve warnings and failures
+      const updatedLogs = logs.map(log => {
+        if (log.status === 'Warning' || log.status === 'Failed') {
+          return { ...log, status: 'Passed' as const };
+        }
+        return log;
+      });
+      setLogs(updatedLogs);
       setIsFixing(false);
     }, 2000);
   };
 
-  const passedCount = AUDIT_LOGS_MOCK.filter(l => l.status === 'Passed').length;
-  const warningCount = AUDIT_LOGS_MOCK.filter(l => l.status === 'Warning').length;
-  const failedCount = AUDIT_LOGS_MOCK.filter(l => l.status === 'Failed').length;
+  const passedCount = logs.filter(l => l.status === 'Passed').length;
+  const warningCount = logs.filter(l => l.status === 'Warning').length;
+  const failedCount = logs.filter(l => l.status === 'Failed').length;
 
   const tabs = [
     { id: 'metrics', label: 'Metrics', icon: BarChart3 },
@@ -118,7 +127,7 @@ const Operations: React.FC<OperationsProps> = ({ defaultTab = 'metrics', externa
             {activeTab === 'metrics' && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <WorkforceImpact />
-                <ComplianceVisualization />
+                <ComplianceVisualization logs={logs} />
               </div>
             )}
 
@@ -149,7 +158,7 @@ const Operations: React.FC<OperationsProps> = ({ defaultTab = 'metrics', externa
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800 text-sm font-mono text-slate-300">
-                    {AUDIT_LOGS_MOCK.map((log) => (
+                    {logs.map((log) => (
                       <tr key={log.id} className="hover:bg-slate-800/50 transition-colors group">
                         <td className="px-6 py-4 text-slate-500 text-xs">
                           {log.id}
