@@ -15,7 +15,7 @@ app.disable("x-powered-by");
 const trustProxy = Number.parseInt(process.env.TRUST_PROXY || "1", 10);
 app.set("trust proxy", Number.isNaN(trustProxy) ? 1 : trustProxy);
 
-const NODE_ENV = process.env.NODE_ENV || "development";
+const NODE_ENV = process.env.NODE_ENV || "production";
 const IS_PROD = NODE_ENV === "production";
 
 const configuredJwtSecret = process.env.JWT_SECRET;
@@ -658,6 +658,5 @@ function escapeHtml(str) {
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`OptiSchedule Enterprise running on ${PORT}`));
-
 
 
