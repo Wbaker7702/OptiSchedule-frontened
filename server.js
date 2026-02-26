@@ -11,19 +11,6 @@ const shiftsRouter = require("./routes/shifts");
 const aiRouter = require("./routes/ai");
 
 const app = express();
-app.set("trust proxy", 1);
-app.disable("x-powered-by");
-
-const JWT_SECRET = process.env.JWT_SECRET;
-const COOKIE_NAME = "opti_session";
-const IS_PROD = process.env.NODE_ENV === "production";
-
-if (!JWT_SECRET || JWT_SECRET.length < 32) {
-  throw new Error("JWT_SECRET must be set and at least 32 characters long.");
-}
-const aiRouter = require("./routes/ai");
-
-const app = express();
 app.disable("x-powered-by");
 
 const trustProxy = Number.parseInt(process.env.TRUST_PROXY || "1", 10);
@@ -36,6 +23,7 @@ const configuredJwtSecret = process.env.JWT_SECRET;
 if (IS_PROD && (!configuredJwtSecret || configuredJwtSecret.length < 32)) {
   throw new Error("JWT_SECRET must be set to at least 32 characters in production.");
 }
+
 const JWT_SECRET =
   configuredJwtSecret && configuredJwtSecret.length >= 32
     ? configuredJwtSecret
@@ -59,7 +47,8 @@ const COOKIE_OPTIONS = {
 const DEMO_USERNAME = (process.env.DEMO_USERNAME || "").trim();
 const DEMO_PASSWORD = process.env.DEMO_PASSWORD || "";
 const DEMO_PASSWORD_HASH = process.env.DEMO_PASSWORD_HASH || "";
-const HAS_SECURE_LOGIN_CONFIG = Boolean(DEMO_USERNAME) && Boolean(DEMO_PASSWORD || DEMO_PASSWORD_HASH);
+const HAS_SECURE_LOGIN_CONFIG =
+  Boolean(DEMO_USERNAME) && Boolean(DEMO_PASSWORD || DEMO_PASSWORD_HASH);
 
 if (IS_PROD && !HAS_SECURE_LOGIN_CONFIG) {
   console.warn(
@@ -83,26 +72,15 @@ app.use(
     contentSecurityPolicy: {
       useDefaults: true,
       directives: {
-        "default-src": ["'self'"],
-        "script-src": ["'self'", "'unsafe-inline'"],
-        "style-src": ["'self'", "'unsafe-inline'"],
-        "img-src": ["'self'", "data:"],
-        "connect-src": ["'self'"],
-        "object-src": ["'none'"],
-        "base-uri": ["'self'"],
-        "frame-ancestors": ["'none'"],
-        "form-action": ["'self'"],
-      },
-    },
         defaultSrc: ["'self'"],
-        baseUri: ["'self'"],
-        connectSrc: ["'self'"],
-        formAction: ["'self'"],
-        frameAncestors: ["'none'"],
-        imgSrc: ["'self'", "data:"],
-        objectSrc: ["'none'"],
-        scriptSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:"],
+        connectSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        frameAncestors: ["'none'"],
+        formAction: ["'self'"],
       },
     },
     crossOriginOpenerPolicy: { policy: "same-origin" },
@@ -122,10 +100,6 @@ app.use(
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: "Too many login attempts. Please try again later.",
   max: 12,
   standardHeaders: true,
   legacyHeaders: false,
@@ -138,22 +112,11 @@ function signSession(payload) {
 }
 
 function setSessionCookie(res, token) {
-  res.cookie(COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: IS_PROD, // true under https
-    sameSite: "strict",
-    maxAge: 8 * 60 * 60 * 1000,
-    path: "/",
-  });
+  res.cookie(COOKIE_NAME, token, COOKIE_OPTIONS);
 }
 
 function clearSessionCookie(res) {
-  res.clearCookie(COOKIE_NAME, {
-    path: "/",
-    httpOnly: true,
-    secure: IS_PROD,
-    sameSite: "strict",
-  });
+  res.clearCookie(COOKIE_NAME, COOKIE_OPTIONS);
 }
 
 function isApiRequest(req) {
@@ -170,11 +133,6 @@ function rejectUnauthorized(req, res) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   return res.redirect("/");
-  res.cookie(COOKIE_NAME, token, COOKIE_OPTIONS);
-}
-
-function clearSessionCookie(res) {
-  res.clearCookie(COOKIE_NAME, COOKIE_OPTIONS);
 }
 
 function requireAuth(req, res, next) {
@@ -272,8 +230,6 @@ app.get("/health", (req, res) => {
 
 // ---------- APIs ----------
 app.use("/api/shifts", requireAuth, shiftsRouter);
-app.use("/api/ai", requireAuth, aiRouter);
-
 app.get("/api/session", requireAuth, (req, res) => {
   const user = req.user || {};
   res.json({
@@ -556,16 +512,6 @@ app.get("/", (req, res) => {
 });
 
 // ---------- auth ----------
-app.post("/login", loginLimiter, (req, res) => {
-  const username = String(req.body.username || "").trim();
-  const password = String(req.body.password || "");
-  if (!username || !password) return res.redirect("/");
-
-  const token = signSession({
-    userId: 1,
-    role: "manager",
-    name: username.slice(0, 80),
-  });
 app.post("/login", loginLimiter, async (req, res) => {
   const username = String(req.body?.username || "").trim();
   const password = String(req.body?.password || "");
@@ -955,36 +901,6 @@ app.get("/dashboard", requireAuth, (req, res) => {
 });
 
 // ---------- demo API routes (JWT protected) ----------
-app.post("/api/sim/black-friday", requireAuth, (req, res) => {
-  // TODO: hook to your real spike engine
-  res.json({
-    ok: true,
-    mode: "BLACK_FRIDAY",
-    updatedAt: new Date().toISOString(),
-  });
-});
-
-app.post("/api/sim/reset", requireAuth, (req, res) => {
-  res.json({
-    ok: true,
-    mode: "NORMAL",
-    updatedAt: new Date().toISOString(),
-  });
-});
-
-// Express JSON parsing and fallback error handling
-app.use((err, req, res, next) => {
-  if (err instanceof SyntaxError && "body" in err) {
-    return res.status(400).json({ error: "Malformed JSON payload" });
-  }
-  return next(err);
-});
-
-app.use((req, res) => {
-  if (isApiRequest(req)) {
-    return res.status(404).json({ error: "Not found" });
-  }
-  return res.status(404).send("Not found");
 app.get("/api/sim/status", requireAuth, (req, res) => {
   res.json({
     ok: true,
@@ -1013,6 +929,21 @@ app.post("/api/sim/reset", requireAuth, requireSameOrigin, (req, res) => {
   );
 });
 
+// Express JSON parsing and fallback error handling
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && "body" in err) {
+    return res.status(400).json({ error: "Malformed JSON payload" });
+  }
+  return next(err);
+});
+
+app.use((req, res) => {
+  if (isApiRequest(req)) {
+    return res.status(404).json({ error: "Not found" });
+  }
+  return res.status(404).send("Not found");
+});
+
 // ---- tiny escape helper for HTML injection safety ----
 function escapeHtml(str) {
   return String(str || "")
@@ -1025,6 +956,3 @@ function escapeHtml(str) {
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`OptiSchedule Enterprise running on ${PORT}`));
-
-
-
