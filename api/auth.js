@@ -105,7 +105,7 @@ export async function handler(event) {
     };
   } catch (error) {
     console.error('Authentication error:', error);
-    const statusCode = error.message && (error.message.includes('Invalid') || error.message.includes('required') || error.message.includes('format') || error.message.includes('security')) ? 400 : 500;
+    const statusCode = error.message && /Invalid|required|format|security/.test(error.message) ? 400 : 500;
     const message = statusCode === 400 ? error.message : 'An internal server error occurred.';
     return {
       statusCode,
