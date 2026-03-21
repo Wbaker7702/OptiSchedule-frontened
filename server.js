@@ -7,6 +7,7 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const csurf = require("csurf");
 const aiRouter = require("./routes/ai");
 const shiftsRouter = require("./routes/shifts");
 
@@ -63,6 +64,7 @@ const simulationState = {
 app.use(express.urlencoded({ extended: false, limit: "10kb" }));
 app.use(express.json({ limit: "100kb" }));
 app.use(cookieParser());
+const csrfProtection = csurf({ cookie: true });
 
 // Security headers
 app.use(
@@ -628,7 +630,7 @@ app.get("/api/sim/status", requireAuth, (req, res) => {
   });
 });
 
-app.post("/api/sim/black-friday", requireAuth, requireSameOrigin, (req, res) => {
+app.post("/api/sim/black-friday", requireAuth, csrfProtection, requireSameOrigin, (req, res) => {
   setSimulationMode("BLACK_FRIDAY");
   return respondSimulationResult(
     req,
@@ -638,7 +640,7 @@ app.post("/api/sim/black-friday", requireAuth, requireSameOrigin, (req, res) => 
   );
 });
 
-app.post("/api/sim/reset", requireAuth, requireSameOrigin, (req, res) => {
+app.post("/api/sim/reset", requireAuth, csrfProtection, requireSameOrigin, (req, res) => {
   setSimulationMode("NORMAL");
   return respondSimulationResult(
     req,
