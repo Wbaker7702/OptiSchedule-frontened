@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
@@ -31,8 +30,41 @@ const App: React.FC = () => {
   const [isERPConnected, setIsERPConnected] = useState(true);
   const [hubspotStatus, setHubspotStatus] = useState<IntegrationStatus>('connected');
 
+  React.useEffect(() => {
+    // Validate authentication token with backend on app load
+    const validateAuth = async () => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          const response = await fetch('/api/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'validate', token }),
+          });
+          const data = await response.json();
+          if (response.ok && data.valid) {
+            setIsAuthenticated(true);
+          } else {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+          }
+        } catch (error) {
+          console.error('Token validation failed:', error);
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+        }
+      }
+    };
+    validateAuth();
+  }, []);
+
   const handleLogin = () => setIsAuthenticated(true);
-  const handleLogout = () => { setIsAuthenticated(false); setCurrentView(View.DASHBOARD); };
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+    setCurrentView(View.DASHBOARD);
+  };
 
   const navigateToOperations = (tab: 'metrics' | 'audit' | 'vision' | 'scanner' | 'variance' | 'compliance' = 'metrics') => {
     setOperationsTab(tab);
