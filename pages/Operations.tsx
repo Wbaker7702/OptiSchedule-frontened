@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import { AUDIT_LOGS_MOCK } from '../constants';
@@ -16,17 +17,6 @@ const Operations: React.FC<OperationsProps> = ({ defaultTab = 'metrics', externa
   useEffect(() => {
     if (defaultTab) setActiveTab(defaultTab);
   }, [defaultTab]);
-
-  useEffect(() => {
-    if (externalTrigger) {
-      // Handle external trigger - switch to audit tab for asset scans
-      if (externalTrigger === 'NEW_ASSET_SCAN') {
-        setActiveTab('audit');
-      }
-      // Clear the trigger after handling
-      onClearTrigger?.();
-    }
-  }, [externalTrigger, onClearTrigger]);
 
   const passedCount = AUDIT_LOGS_MOCK.filter(l => l.status === 'Passed').length;
   const warningCount = AUDIT_LOGS_MOCK.filter(l => l.status === 'Warning').length;

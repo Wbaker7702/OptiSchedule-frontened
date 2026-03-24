@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+
+import React, { useState } from 'react';
 import Header from '../components/Header';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ArrowLeftRight, TrendingDown, TrendingUp, Store, Globe, Activity, Scale, Zap, Target, CheckCircle2, RefreshCw, ShieldCheck, AlertCircle } from 'lucide-react';
@@ -28,26 +29,15 @@ const Comparison: React.FC = () => {
   const [syncProgress, setSyncProgress] = useState(0);
   const [syncPhase, setSyncPhase] = useState('Initializing');
   const [isApplied, setIsApplied] = useState(false);
-  const isMountedRef = useRef(true);
 
   const reg = LABOR_REGULATIONS[CURRENT_STATE];
-
-  useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
 
   const handleApplyBaseline = () => {
     setIsSyncing(true);
     setSyncProgress(0);
     setSyncPhase('Initializing Handshake...');
-
+    
     const interval = setInterval(() => {
-      if (!isMountedRef.current) {
-        clearInterval(interval);
-        return;
-      }
       setSyncProgress(prev => {
         if (prev < 30) setSyncPhase('Mapping Fiscal Data...');
         else if (prev < 60) setSyncPhase(`Applying ${reg.state} Labor Linter...`);
@@ -62,8 +52,7 @@ const Comparison: React.FC = () => {
       });
     }, 50);
 
-    const timeout = setTimeout(() => {
-      if (!isMountedRef.current) return;
+    setTimeout(() => {
       const optimizedData = chartData.map(d => ({
         ...d,
         store5065: Math.round((d.store5065 + d.store2080) / 2)

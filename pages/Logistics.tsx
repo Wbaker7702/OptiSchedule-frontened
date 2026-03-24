@@ -1,39 +1,25 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import Header from '../components/Header';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart, Line } from 'recharts';
 import { Truck, Box, Clock, Activity, ArrowUpRight, ShieldCheck, MapPin, Package, AlertTriangle, CheckCircle2, Loader2, Zap, Database, Cloud, FileDown, Download, Brain, Sparkles, Command, MessageSquareText, Terminal, Cpu, Radio, Shield } from 'lucide-react';
 import { HOURLY_LOGISTICS, STORE_NUMBER } from '../constants';
+import { GoogleGenAI } from "@google/genai";
 
 const Logistics: React.FC = () => {
   const [activeDock, setActiveDock] = useState<number | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showExportSuccess, setShowExportSuccess] = useState(false);
-
+  
   // Insight Engine State
   const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [insightStep, setInsightStep] = useState<string>('');
 
-  const isMountedRef = useRef(true);
-  const timerRefsRef = useRef<(NodeJS.Timeout | NodeJS.Timer)[]>([]);
-
-  useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-      timerRefsRef.current.forEach(timer => {
-        clearTimeout(timer as NodeJS.Timeout);
-        clearInterval(timer as NodeJS.Timer);
-      });
-    };
-  }, []);
-
   const handleSync = () => {
     setIsSyncing(true);
-    const timeout = setTimeout(() => {
-      if (isMountedRef.current) setIsSyncing(false);
-    }, 2000);
-    timerRefsRef.current.push(timeout);
+    setTimeout(() => setIsSyncing(false), 2000);
   };
 
   const generateInsights = async () => {
@@ -50,68 +36,45 @@ const Logistics: React.FC = () => {
 
     let stepIdx = 0;
     const stepInterval = setInterval(() => {
-        if (!isMountedRef.current) {
-          clearInterval(stepInterval);
-          return;
-        }
         if (stepIdx < steps.length) {
             setInsightStep(steps[stepIdx]);
             stepIdx++;
         }
     }, 400);
-    timerRefsRef.current.push(stepInterval);
 
     try {
-      // Call backend API instead of exposing API key to client
-      const apiResponse = await fetch('/api/gemini', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'generateContent',
-          payload: {
-            prompt: `Analyze the following logistics data for Store #5065 and provide 3 high-impact management directives in a narrative, "cyber-ops" terminal style.
-
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `Analyze the following logistics data for Store #5065 and provide 3 high-impact management directives in a narrative, "cyber-ops" terminal style.
+        
         Logistics Data: ${JSON.stringify(HOURLY_LOGISTICS)}
         Docks Context: Dock 1 (Occupied - Unloading), Dock 2 (Awaiting - FED-2201), Dock 4 (Occupied - Staging).
-
+        
         Requirements:
         1. Use a gritty, authoritative command-line tone.
         2. Identify specific bottlenecks (e.g., the 85-unit outbound spike at 12 PM).
         3. Recommend specific labor reallocations (e.g., moving staff from low-inbound morning hours to peak outbound windows).
         4. Format the output with clear [DIRECTIVE], [OBSERVATION], and [STATUS] headers.
-        5. Keep the total word count under 120 words.`
-          }
-        })
+        5. Keep the total word count under 120 words.`,
       });
 
-      if (!apiResponse.ok) {
-        throw new Error(`API error: ${apiResponse.statusText}`);
-      }
-
-      const responseData = await apiResponse.json();
       clearInterval(stepInterval);
-      if (isMountedRef.current) {
-        setAiInsight(responseData.response || "Insight generation failed. Azure Handshake Timeout.");
-      }
+      setAiInsight(response.text || "Insight generation failed. Azure Handshake Timeout.");
     } catch (error) {
       clearInterval(stepInterval);
       console.error("AI Insight Error:", error);
-      if (isMountedRef.current) {
-        setAiInsight("CRITICAL ERROR: Microsoft Sentinel Insight Node unreachable. Check Cloud Fabric credentials or regional connectivity.");
-      }
+      setAiInsight("CRITICAL ERROR: Microsoft Sentinel Insight Node unreachable. Check Cloud Fabric credentials or regional connectivity.");
     } finally {
-      if (isMountedRef.current) {
-        setIsGeneratingInsights(false);
-        setInsightStep('');
-      }
+      setIsGeneratingInsights(false);
+      setInsightStep('');
     }
   };
 
   const handleExport = () => {
     setIsExporting(true);
-
-    const timeout1 = setTimeout(() => {
-      if (!isMountedRef.current) return;
+    
+    setTimeout(() => {
       try {
         const timestamp = new Date().toLocaleString();
         const content = `
@@ -150,22 +113,18 @@ RECONCILIATION:
         link.setAttribute('download', `Node_5065_Logistics_Manifest_${Date.now()}.txt`);
         document.body.appendChild(link);
         link.click();
-
+        
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-
+        
         setIsExporting(false);
         setShowExportSuccess(true);
-        const timeout2 = setTimeout(() => {
-          if (isMountedRef.current) setShowExportSuccess(false);
-        }, 3000);
-        timerRefsRef.current.push(timeout2);
+        setTimeout(() => setShowExportSuccess(false), 3000);
       } catch (err) {
         console.error("Export Error:", err);
-        if (isMountedRef.current) setIsExporting(false);
+        setIsExporting(false);
       }
     }, 1500);
-    timerRefsRef.current.push(timeout1);
   };
 
   const docks = [
